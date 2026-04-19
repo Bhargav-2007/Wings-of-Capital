@@ -14,6 +14,7 @@
 import uuid
 from decimal import Decimal
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from models import EntryDirection, JournalEntry, LedgerPosting
@@ -66,4 +67,49 @@ def create_journal_entry(session: Session, payload: PostingRequest) -> dict:
         "total_credits": credit_total,
         "currency": currency,
         "line_count": len(payload.lines),
+    }
+
+
+def get_journal_entry_by_id(session: Session, entry_id: str) -> JournalEntry | None:
+    return session.query(JournalEntry).filter(JournalEntry.id == entry_id).first()
+
+
+def get_journal_entry_by_reference(session: Session, reference: str) -> JournalEntry | None:
+    return session.query(JournalEntry).filter(JournalEntry.reference == reference).first()
+
+
+def list_journal_entries(session: Session, limit: int) -> list[JournalEntry]:
+    return session.query(JournalEntry).order_by(JournalEntry.created_at.desc()).limit(limit).all()
+
+
+def get_account_balance(session: Session, account_id: str, currency: str) -> dict:
+    debit_sum = (
+        session.query(func.coalesce(func.sum(LedgerPosting.amount), 0))
+        .filter(
+            LedgerPosting.account_id == account_id,
+            LedgerPosting.currency == currency,
+            LedgerPosting.direction == EntryDirection.debit,
+        )
+        .scalar()
+    )
+
+    credit_sum = (
+        session.query(func.coalesce(func.sum(LedgerPosting.amount), 0))
+        .filter(
+            LedgerPosting.account_id == account_id,
+            LedgerPosting.currency == currency,
+            LedgerPosting.direction == EntryDirection.credit,
+        )
+        .scalar()
+    )
+
+    debit_total = Decimal(str(debit_sum))
+    credit_total = Decimal(str(credit_sum))
+
+    return {
+        "account_id": account_id,
+        "currency": currency,
+        "debits": debit_total,
+        "credits": credit_total,
+        "net_balance": debit_total - credit_total,
     }

@@ -35,6 +35,12 @@ jobs:
         run: |
           python -m py_compile services/${{ matrix.service }}/app.py
 
+      - name: Run core-ledger tests
+        if: matrix.service == 'core-ledger'
+        run: |
+          cd services/core-ledger
+          pytest -q
+
   security-scan:
     runs-on: ubuntu-latest
     steps:

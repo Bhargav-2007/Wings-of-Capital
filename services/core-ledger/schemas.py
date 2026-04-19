@@ -59,3 +59,31 @@ class PostingResponse(BaseModel):
     currency: str
     line_count: int
     reconciliation_task_id: str | None
+
+
+class LedgerLineResponse(BaseModel):
+    account_id: str
+    direction: Direction
+    amount: Decimal
+    currency: str
+
+
+class JournalEntryResponse(BaseModel):
+    entry_id: str
+    reference: str
+    currency: str
+    created_at: str
+    lines: list[LedgerLineResponse]
+
+
+class JournalListResponse(BaseModel):
+    items: list[JournalEntryResponse]
+    count: int
+
+
+class AccountBalanceResponse(BaseModel):
+    account_id: str
+    currency: str
+    debits: Decimal
+    credits: Decimal
+    net_balance: Decimal

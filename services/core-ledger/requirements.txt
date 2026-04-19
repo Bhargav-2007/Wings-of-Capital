@@ -5,3 +5,4 @@ psycopg[binary]==3.2.6
 pydantic==2.11.3
 celery[redis]==5.4.0
 redis==5.2.1
+pytest==8.3.5
