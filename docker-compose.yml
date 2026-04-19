@@ -63,6 +63,8 @@ services:
     build: ./services/core-ledger
     environment:
       SERVICE_NAME: core-ledger
+      DATABASE_URL: postgresql+psycopg://wings:wings@postgres:5432/wings_capital
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8001:8000"
     depends_on:
@@ -75,6 +77,19 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+
+  core-ledger-worker:
+    build: ./services/core-ledger
+    command: ["celery", "-A", "worker.celery_app", "worker", "--loglevel=info", "--concurrency=1"]
+    environment:
+      SERVICE_NAME: core-ledger-worker
+      DATABASE_URL: postgresql+psycopg://wings:wings@postgres:5432/wings_capital
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   ai-engine:
     build: ./services/ai-engine
