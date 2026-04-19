@@ -81,7 +81,6 @@ services:
   core-ledger-worker:
     build: ./services/core-ledger
     command: ["celery", "-A", "worker.celery_app", "worker", "--loglevel=info", "--concurrency=1"]
-    user: "1000:1000"
     environment:
       SERVICE_NAME: core-ledger-worker
       DATABASE_URL: postgresql+psycopg://wings:wings@postgres:5432/wings_capital
@@ -96,6 +95,19 @@ services:
       interval: 15s
       timeout: 10s
       retries: 10
+
+  core-ledger-beat:
+    build: ./services/core-ledger
+    command: ["celery", "-A", "worker.celery_app", "beat", "--loglevel=info", "--schedule=/tmp/celerybeat-schedule"]
+    environment:
+      SERVICE_NAME: core-ledger-beat
+      DATABASE_URL: postgresql+psycopg://wings:wings@postgres:5432/wings_capital
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   ai-engine:
     build: ./services/ai-engine

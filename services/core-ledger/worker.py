@@ -12,13 +12,24 @@
 # limitations under the License.
 
 import os
+from datetime import timedelta
 
 from celery import Celery
+
+from audit import append_audit_event, verify_audit_chain
+from db import SessionLocal
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 
 celery_app = Celery("core_ledger", broker=REDIS_URL, backend=REDIS_URL)
 celery_app.conf.task_default_queue = "ledger_tasks"
+celery_app.conf.broker_connection_retry_on_startup = True
+celery_app.conf.beat_schedule = {
+    "audit-chain-verify-every-minute": {
+        "task": "core_ledger.audit_verify_periodic",
+        "schedule": timedelta(minutes=1),
+    }
+}
 
 
 @celery_app.task(name="core_ledger.reconcile_entry")
@@ -34,3 +45,24 @@ def trigger_reconciliation(entry_id: str) -> str | None:
     except Exception:
         # API should remain available even if the broker is temporarily unavailable.
         return None
+
+
+@celery_app.task(name="core_ledger.audit_verify_periodic")
+def audit_verify_periodic(limit: int = 5000) -> dict:
+    session = SessionLocal()
+    try:
+        result = verify_audit_chain(session, limit=limit)
+        if not result.get("valid", False):
+            append_audit_event(
+                session,
+                event_type="ledger.audit.chain_invalid",
+                entity_type="audit_chain",
+                entity_id="global",
+                payload={
+                    "checked_events": result.get("checked_events", 0),
+                    "issues_count": len(result.get("issues", [])),
+                },
+            )
+        return result
+    finally:
+        session.close()
