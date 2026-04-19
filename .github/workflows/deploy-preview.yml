@@ -1,0 +1,50 @@
+name: deploy-preview
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  deploy-preview:
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/deploy') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate kubeconfig secret
+        run: |
+          if [ -z "${{ secrets.PREVIEW_KUBECONFIG }}" ]; then
+            echo "Missing PREVIEW_KUBECONFIG secret. Aborting." >&2
+            exit 1
+          fi
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.28.3"
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.PREVIEW_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+      - name: Ensure namespace exists
+        run: |
+          kubectl get namespace wings-preview >/dev/null 2>&1 || kubectl create namespace wings-preview
+      - name: Deploy manifests
+        run: |
+          if [ ! -d backend/k8s ]; then
+            echo "backend/k8s not found. Add Kubernetes manifests before deploying." >&2
+            exit 1
+          fi
+          kubectl apply -n wings-preview -f backend/k8s
+      - name: Comment success
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Preview deployment succeeded.
+            Namespace: wings-preview
+            Commit: ${{ github.sha }}

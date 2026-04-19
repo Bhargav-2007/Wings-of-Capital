@@ -1,0 +1,58 @@
+# Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved.
+# Licensed under the Apache License, Version 2.0.
+# Wings of Capital - Shared Python Dependencies
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.2
+pydantic-settings==2.1.0
+email-validator==2.1.0.post1
+
+# Database & ORM
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.0
+
+# Caching & Messaging
+redis==5.0.1
+celery==5.3.4
+python-dotenv==1.0.0
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pydantic-extra-types==2.3.0
+cryptography==41.0.7
+
+# API Documentation
+python-multipart==0.0.6
+pyotp==2.9.0
+qrcode==7.4.2
+pillow==10.2.0
+
+# Web3 & Crypto
+web3==6.11.0
+ccxt==4.5.49
+requests==2.31.0
+
+# ML/AI (optional, see requirements-ml.txt)
+
+# Monitoring & Logging
+prometheus-client==0.19.0
+python-json-logger==2.0.7
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.25.2
+
+# Code Quality
+black==23.12.0
+flake8==6.1.0
+mypy==1.7.1
+isort==5.13.2
+
+# Development
+ipython==8.18.1

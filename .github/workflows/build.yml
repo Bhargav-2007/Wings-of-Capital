@@ -1,0 +1,32 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - name: auth
+            dockerfile: backend/services/auth_service/Dockerfile
+            image: wings-of-capital/auth-service
+          - name: ledger
+            dockerfile: backend/services/ledger_service/Dockerfile
+            image: wings-of-capital/ledger-service
+          - name: crypto
+            dockerfile: backend/services/crypto_service/Dockerfile
+            image: wings-of-capital/crypto-service
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build image
+        env:
+          DOCKER_BUILDKIT: 1
+        run: docker build --pull -f ${{ matrix.service.dockerfile }} -t ${{ matrix.service.image }} .

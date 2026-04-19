@@ -1,0 +1,59 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: auth-service
+    url: http://auth_service:8001
+    routes:
+      - name: auth-route
+        paths:
+          - /api/v1/auth
+        strip_path: true
+
+  - name: ledger-service
+    url: http://ledger_service:8002
+    routes:
+      - name: ledger-route
+        paths:
+          - /api/v1/ledger
+        strip_path: true
+
+  - name: crypto-service
+    url: http://crypto_service:8003
+    routes:
+      - name: crypto-route
+        paths:
+          - /api/v1/crypto
+        strip_path: true
+
+plugins:
+  - name: correlation-id
+    config:
+      header_name: X-Request-ID
+      generator: uuid
+      echo_downstream: true
+
+  - name: cors
+    config:
+      origins:
+        - http://localhost:8080
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Request-ID
+      exposed_headers:
+        - X-Request-ID
+      credentials: true
+      max_age: 3600
+
+  - name: rate-limiting
+    config:
+      minute: 120
+      policy: local

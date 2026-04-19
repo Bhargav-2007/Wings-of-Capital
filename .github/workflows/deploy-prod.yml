@@ -1,0 +1,41 @@
+name: deploy-production
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate kubeconfig secret
+        run: |
+          if [ -z "${{ secrets.PROD_KUBECONFIG }}" ]; then
+            echo "Missing PROD_KUBECONFIG secret. Aborting." >&2
+            exit 1
+          fi
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.28.3"
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.PROD_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+      - name: Ensure namespace exists
+        run: |
+          kubectl get namespace wings-production >/dev/null 2>&1 || kubectl create namespace wings-production
+      - name: Deploy manifests
+        run: |
+          if [ ! -d backend/k8s ]; then
+            echo "backend/k8s not found. Add Kubernetes manifests before deploying." >&2
+            exit 1
+          fi
+          kubectl apply -n wings-production -f backend/k8s

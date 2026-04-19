@@ -1,0 +1,5 @@
+# Optional ML/AI dependencies
+# Install only when you need AI/ML features to avoid heavy images.
+
+torch==2.3.1
+scikit-learn==1.4.2

@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: timescaledb
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: timescaledb
+  ports:
+    - name: timescaledb
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: vault
+  ports:
+    - name: vault
+      port: 8200
+      targetPort: 8200
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-proxy
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: kong
+  ports:
+    - name: proxy
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: kong
+  ports:
+    - name: admin
+      port: 8001
+      targetPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ledger-service
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: ledger-service
+  ports:
+    - name: http
+      port: 8002
+      targetPort: 8002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crypto-service
+  namespace: wings-of-capital
+spec:
+  selector:
+    app: crypto-service
+  ports:
+    - name: http
+      port: 8003
+      targetPort: 8003

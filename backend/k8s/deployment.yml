@@ -1,0 +1,455 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: wings-of-capital
+data:
+  kong.yml: |
+    _format_version: "3.0"
+    _transform: true
+
+    services:
+      - name: auth-service
+        url: http://auth-service:8001
+        routes:
+          - name: auth-route
+            paths:
+              - /api/v1/auth
+            strip_path: true
+
+      - name: ledger-service
+        url: http://ledger-service:8002
+        routes:
+          - name: ledger-route
+            paths:
+              - /api/v1/ledger
+            strip_path: true
+
+      - name: crypto-service
+        url: http://crypto-service:8003
+        routes:
+          - name: crypto-route
+            paths:
+              - /api/v1/crypto
+            strip_path: true
+
+    plugins:
+      - name: correlation-id
+        config:
+          header_name: X-Request-ID
+          generator: uuid
+          echo_downstream: true
+
+      - name: cors
+        config:
+          origins:
+            - http://localhost:8080
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - X-Request-ID
+          exposed_headers:
+            - X-Request-ID
+          credentials: true
+          max_age: 3600
+
+      - name: rate-limiting
+        config:
+          minute: 120
+          policy: local
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: wings-of-capital
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: timescale-data
+  namespace: wings-of-capital
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data
+  namespace: wings-of-capital
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-data
+  namespace: wings-of-capital
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: wings-of-capital
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: woc_user
+            - name: POSTGRES_PASSWORD
+              value: woc_password
+            - name: POSTGRES_DB
+              value: wings_of_capital
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timescaledb
+  namespace: wings-of-capital
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: timescaledb
+  template:
+    metadata:
+      labels:
+        app: timescaledb
+    spec:
+      containers:
+        - name: timescaledb
+          image: timescale/timescaledb:latest-pg15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: woc_user
+            - name: POSTGRES_PASSWORD
+              value: woc_password
+            - name: POSTGRES_DB
+              value: wings_timescale
+          volumeMounts:
+            - name: timescale-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: timescale-data
+          persistentVolumeClaim:
+            claimName: timescale-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: wings-of-capital
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          args:
+            - redis-server
+            - --requirepass
+            - redis_secret_password
+            - --maxmemory
+            - 512mb
+            - --maxmemory-policy
+            - allkeys-lru
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: wings-of-capital
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.12-management-alpine
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: guest
+            - name: RABBITMQ_DEFAULT_PASS
+              value: guest
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+      volumes:
+        - name: rabbitmq-data
+          persistentVolumeClaim:
+            claimName: rabbitmq-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault
+  namespace: wings-of-capital
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      containers:
+        - name: vault
+          image: hashicorp/vault:1.17
+          ports:
+            - containerPort: 8200
+          env:
+            - name: VAULT_DEV_ROOT_TOKEN_ID
+              value: dev-token-12345
+            - name: VAULT_DEV_LISTEN_ADDRESS
+              value: 0.0.0.0:8200
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: wings-of-capital
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+    spec:
+      containers:
+        - name: kong
+          image: kong/kong:3.7
+          ports:
+            - containerPort: 8000
+            - containerPort: 8001
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: /etc/kong/kong.yml
+            - name: KONG_PROXY_ACCESS_LOG
+              value: /dev/stdout
+            - name: KONG_ADMIN_ACCESS_LOG
+              value: /dev/stdout
+            - name: KONG_PROXY_ERROR_LOG
+              value: /dev/stderr
+            - name: KONG_ADMIN_ERROR_LOG
+              value: /dev/stderr
+            - name: KONG_ADMIN_LISTEN
+              value: 0.0.0.0:8001
+          volumeMounts:
+            - name: kong-config
+              mountPath: /etc/kong/kong.yml
+              subPath: kong.yml
+      volumes:
+        - name: kong-config
+          configMap:
+            name: kong-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: wings-of-capital
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: ghcr.io/bhargav-2007/wings-of-capital-auth-service:latest
+          ports:
+            - containerPort: 8001
+          env:
+            - name: SERVICE_NAME
+              value: auth_service
+            - name: DATABASE_URL
+              value: postgresql://woc_user:woc_password@postgres:5432/wings_of_capital
+            - name: REDIS_URL
+              value: redis://:redis_secret_password@redis:6379/0
+            - name: JWT_SECRET_KEY
+              value: dev-secret-key-change-in-production
+            - name: JWT_ALGORITHM
+              value: HS256
+            - name: JWT_EXPIRY_MINUTES
+              value: "60"
+            - name: JWT_REFRESH_EXPIRY_DAYS
+              value: "7"
+            - name: API_HOST
+              value: 0.0.0.0
+            - name: API_PORT
+              value: "8001"
+            - name: ENVIRONMENT
+              value: production
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger-service
+  namespace: wings-of-capital
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ledger-service
+  template:
+    metadata:
+      labels:
+        app: ledger-service
+    spec:
+      containers:
+        - name: ledger-service
+          image: ghcr.io/bhargav-2007/wings-of-capital-ledger-service:latest
+          ports:
+            - containerPort: 8002
+          env:
+            - name: SERVICE_NAME
+              value: ledger_service
+            - name: DATABASE_URL
+              value: postgresql://woc_user:woc_password@postgres:5432/wings_of_capital
+            - name: TIMESCALE_URL
+              value: postgresql://woc_user:woc_password@timescaledb:5432/wings_timescale
+            - name: REDIS_URL
+              value: redis://:redis_secret_password@redis:6379/0
+            - name: JWT_SECRET_KEY
+              value: dev-secret-key-change-in-production
+            - name: API_HOST
+              value: 0.0.0.0
+            - name: API_PORT
+              value: "8002"
+            - name: CELERY_BROKER_URL
+              value: amqp://guest:guest@rabbitmq:5672//
+            - name: ENVIRONMENT
+              value: production
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crypto-service
+  namespace: wings-of-capital
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crypto-service
+  template:
+    metadata:
+      labels:
+        app: crypto-service
+    spec:
+      containers:
+        - name: crypto-service
+          image: ghcr.io/bhargav-2007/wings-of-capital-crypto-service:latest
+          ports:
+            - containerPort: 8003
+          env:
+            - name: SERVICE_NAME
+              value: crypto_service
+            - name: DATABASE_URL
+              value: postgresql://woc_user:woc_password@postgres:5432/wings_of_capital
+            - name: TIMESCALE_URL
+              value: postgresql://woc_user:woc_password@timescaledb:5432/wings_timescale
+            - name: REDIS_URL
+              value: redis://:redis_secret_password@redis:6379/0
+            - name: JWT_SECRET_KEY
+              value: dev-secret-key-change-in-production
+            - name: COINGECKO_API_KEY
+              value: ""
+            - name: ETHEREUM_RPC_URL
+              value: ""
+            - name: API_HOST
+              value: 0.0.0.0
+            - name: API_PORT
+              value: "8003"
+            - name: CELERY_BROKER_URL
+              value: amqp://guest:guest@rabbitmq:5672//
+            - name: ENVIRONMENT
+              value: production
