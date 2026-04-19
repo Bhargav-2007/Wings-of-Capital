@@ -9,11 +9,21 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wings -d wings_capital"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   kong:
     image: kong:3.7
@@ -31,7 +41,13 @@ services:
       - "8000:8000"
       - "8007:8001"
     depends_on:
-      - core-ledger
+      core-ledger:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "kong health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
   vault:
     image: hashicorp/vault:1.17
@@ -50,8 +66,15 @@ services:
     ports:
       - "8001:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   ai-engine:
     build: ./services/ai-engine
@@ -60,8 +83,15 @@ services:
     ports:
       - "8002:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   onchain-analytics:
     build: ./services/onchain-analytics
@@ -70,8 +100,15 @@ services:
     ports:
       - "8003:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   payment-gateway:
     build: ./services/payment-gateway
@@ -80,8 +117,15 @@ services:
     ports:
       - "8004:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   fraud-detection:
     build: ./services/fraud-detection
@@ -90,8 +134,15 @@ services:
     ports:
       - "8005:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   kyc-service:
     build: ./services/kyc-service
@@ -100,8 +151,15 @@ services:
     ports:
       - "8006:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
 volumes:
   pgdata:

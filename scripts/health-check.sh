@@ -14,6 +14,9 @@
 
 set -euo pipefail
 
+retries="${HEALTH_RETRIES:-20}"
+delay="${HEALTH_DELAY_SECONDS:-2}"
+
 endpoints=(
   "http://localhost:8001/health"
   "http://localhost:8002/health"
@@ -23,9 +26,31 @@ endpoints=(
   "http://localhost:8006/health"
 )
 
+if [[ "${CHECK_GATEWAY:-0}" == "1" ]]; then
+  endpoints+=("http://localhost:8000/core-ledger/health")
+fi
+
+check_endpoint() {
+  local endpoint="$1"
+  local attempt=1
+
+  while [[ "$attempt" -le "$retries" ]]; do
+    if body="$(curl -fsS "$endpoint" 2>/dev/null)"; then
+      echo "$body"
+      return 0
+    fi
+
+    echo "Attempt ${attempt}/${retries} failed for ${endpoint}; retrying in ${delay}s"
+    sleep "$delay"
+    attempt=$((attempt + 1))
+  done
+
+  return 1
+}
+
 for endpoint in "${endpoints[@]}"; do
   echo "Checking ${endpoint}"
-  curl -fsS "${endpoint}" | cat
+  check_endpoint "${endpoint}" | cat
   echo
   echo "---"
 done
