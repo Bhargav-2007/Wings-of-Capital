@@ -1,0 +1,11 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: core-ledger
+    url: http://core-ledger:8000
+    routes:
+      - name: core-ledger-health
+        paths:
+          - /core-ledger
+        strip_path: true
