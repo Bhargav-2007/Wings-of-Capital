@@ -8,7 +8,15 @@ services:
       - name: auth-route
         paths:
           - /api/v1/auth
+        strip_path: false
+      - name: auth-health-route
+        paths:
+          - /api/v1/auth/health
         strip_path: true
+      - name: auth-health
+        paths:
+          - /health
+        strip_path: false
 
   - name: ledger-service
     url: http://ledger_service:8002
@@ -16,6 +24,10 @@ services:
       - name: ledger-route
         paths:
           - /api/v1/ledger
+        strip_path: false
+      - name: ledger-health-route
+        paths:
+          - /api/v1/ledger/health
         strip_path: true
 
   - name: crypto-service
@@ -24,6 +36,10 @@ services:
       - name: crypto-route
         paths:
           - /api/v1/crypto
+        strip_path: false
+      - name: crypto-health-route
+        paths:
+          - /api/v1/crypto/health
         strip_path: true
 
 plugins:

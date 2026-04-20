@@ -14,10 +14,10 @@ COPY backend/services/shared/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/services/shared /app/shared
-COPY backend/services/crypto_service /app
+COPY backend/services/crypto_service /app/crypto_service
 
 ENV PYTHONUNBUFFERED=1
-ENV APP_MODULE="main:app"
+ENV APP_MODULE="crypto_service.main:app"
 ENV PYTHONPATH="/app"
 
 EXPOSE 8003
@@ -25,4 +25,4 @@ EXPOSE 8003
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8003/health')"
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]
+CMD ["uvicorn", "crypto_service.main:app", "--host", "0.0.0.0", "--port", "8003"]

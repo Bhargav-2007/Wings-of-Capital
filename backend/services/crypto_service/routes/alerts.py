@@ -56,6 +56,9 @@ def create_alert(
         target_price=payload.target_price,
         condition=payload.condition,
         enabled=True,
+        notify_email=str(payload.notify_email) if payload.notify_email else None,
+        webhook_url=str(payload.webhook_url) if payload.webhook_url else None,
+        notify_on_trigger=payload.notify_on_trigger,
         triggered_at=triggered_at,
     )
 
@@ -69,7 +72,11 @@ def create_alert(
         target_price=alert.target_price,
         condition=alert.condition,
         enabled=alert.enabled,
+        notify_email=alert.notify_email,
+        webhook_url=alert.webhook_url,
+        notify_on_trigger=alert.notify_on_trigger,
         triggered_at=alert.triggered_at,
+        last_notified_at=alert.last_notified_at,
         created_at=alert.created_at,
     )
 
@@ -87,7 +94,11 @@ def list_alerts(
             target_price=alert.target_price,
             condition=alert.condition,
             enabled=alert.enabled,
+            notify_email=alert.notify_email,
+            webhook_url=alert.webhook_url,
+            notify_on_trigger=alert.notify_on_trigger,
             triggered_at=alert.triggered_at,
+            last_notified_at=alert.last_notified_at,
             created_at=alert.created_at,
         )
         for alert in alerts

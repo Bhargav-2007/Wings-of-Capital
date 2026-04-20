@@ -28,4 +28,8 @@ class PriceAlert(BaseModel):
         sa.Enum(PriceAlertCondition, name="price_alert_condition"), nullable=False
     )
     enabled: Mapped[bool] = mapped_column(sa.Boolean, default=True, nullable=False)
+    notify_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    webhook_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    notify_on_trigger: Mapped[bool] = mapped_column(sa.Boolean, default=True, nullable=False)
     triggered_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_notified_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -2,6 +2,15 @@
 # Licensed under the Apache License, Version 2.0.
 
 from .alerts import PriceAlertCreate, PriceAlertOut  # noqa: F401
+from .ai_models import AIModelMetricOut, AIModelOut  # noqa: F401
 from .portfolio import PortfolioHolding, PortfolioResponse  # noqa: F401
 from .predictions import PredictionRequest, PredictionResponse  # noqa: F401
 from .prices import PriceQuote, PricesResponse  # noqa: F401
+from .reports import (  # noqa: F401
+	AllocationHistoryResponse,
+	AllocationPoint,
+	PnlHistoryPoint,
+	PnlHistoryResponse,
+	PnlPosition,
+	PnlSummary,
+)

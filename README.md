@@ -250,7 +250,10 @@ wings-of-capital/
     ├── test.sh                      # Run test suite
     ├── lint.sh                      # Code quality checks
     ├── docker-build.sh              # Build all containers
-    └── deploy.sh                    # Production deployment
+    ├── deploy.sh                    # Production deployment
+    ├── smoke_test.sh                # Kong + service smoke checks
+    ├── dev_token.py                 # Generate dev JWT token
+    └── seed_crypto_data.py          # Seed crypto sample data
 ```
 
 ---
@@ -328,6 +331,28 @@ cd frontend && python -m http.server 8080
 ```
 
 Navigate to `http://localhost:8080`
+
+---
+
+## 🧪 Dev Helpers
+
+Generate a dev access token:
+
+```bash
+python scripts/dev_token.py
+```
+
+Seed sample holdings + price history:
+
+```bash
+python scripts/seed_crypto_data.py --days 30
+```
+
+Run the smoke test:
+
+```bash
+./scripts/smoke_test.sh
+```
 
 ### **Option 3: Kubernetes Deployment**
 

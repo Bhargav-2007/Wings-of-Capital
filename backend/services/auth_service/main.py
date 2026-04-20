@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from auth_service.routes import auth_router, mfa_router
 from shared.config import get_settings
-from shared.database import ENGINE, health_check
+from shared.database import ENGINE, health_check as db_health_check
 from shared.exceptions import AppError, handle_exception
 from shared.logger import get_logger, init_logging, set_request_id
 from shared.redis import get_redis_client
@@ -62,7 +62,7 @@ def _redis_health() -> bool:
 
 def _dependency_status() -> Dict[str, bool]:
     return {
-        "database": health_check(ENGINE),
+        "database": db_health_check(ENGINE),
         "redis": _redis_health(),
     }
 

@@ -11,6 +11,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from crypto_service.dependencies import get_current_user_id
@@ -19,12 +20,14 @@ from crypto_service.models.holding import Holding
 from crypto_service.models.market_price import MarketPrice
 from crypto_service.schemas.portfolio import PortfolioHolding, PortfolioResponse
 from crypto_service.schemas.prices import PriceQuote, PricesResponse
-from shared.database import TimescaleSessionLocal, get_db
-from shared.exceptions import ValidationError
+from shared.config import get_settings
+from shared.database import SessionLocal, TimescaleSessionLocal, get_db
+from shared.exceptions import AppError, ValidationError
 from shared.redis import RedisClient
 
 router = APIRouter(prefix="/api/v1/crypto", tags=["crypto"])
 cache = RedisClient()
+settings = get_settings()
 
 
 def _cache_key(symbols: List[str], currency: str) -> str:
@@ -35,21 +38,29 @@ def _cache_key(symbols: List[str], currency: str) -> str:
 def _store_market_prices(quotes: List[dict], currency: str) -> None:
     if TimescaleSessionLocal is None or currency.lower() != "usd":
         return
-    session = TimescaleSessionLocal()
-    try:
-        for quote in quotes:
-            session.add(
-                MarketPrice(
-                    symbol=quote["symbol"],
-                    price_usd=Decimal(str(quote["price"])),
-                    volume_24h=Decimal(str(quote["volume_24h"] or 0)),
-                    market_cap=Decimal(str(quote["market_cap"] or 0)),
-                    timestamp=quote["last_updated"],
+
+    session_factories = [TimescaleSessionLocal, SessionLocal]
+    for factory in session_factories:
+        if factory is None:
+            continue
+        session = factory()
+        try:
+            for quote in quotes:
+                session.add(
+                    MarketPrice(
+                        symbol=quote["symbol"],
+                        price_usd=Decimal(str(quote["price"])),
+                        volume_24h=Decimal(str(quote["volume_24h"] or 0)),
+                        market_cap=Decimal(str(quote["market_cap"] or 0)),
+                        timestamp=quote["last_updated"],
+                    )
                 )
-            )
-        session.commit()
-    finally:
-        session.close()
+            session.commit()
+            return
+        except ProgrammingError:
+            session.rollback()
+        finally:
+            session.close()
 
 
 def _get_price_quotes(symbols: List[str], currency: str) -> List[PriceQuote]:
@@ -75,6 +86,80 @@ def _get_price_quotes(symbols: List[str], currency: str) -> List[PriceQuote]:
     return response
 
 
+def _fallback_quotes(symbols: List[str]) -> List[PriceQuote]:
+    now = dt.datetime.now(dt.timezone.utc)
+    return [
+        PriceQuote(
+            symbol=symbol,
+            price=Decimal("0"),
+            market_cap=Decimal("0"),
+            volume_24h=Decimal("0"),
+            last_updated=now,
+        )
+        for symbol in symbols
+    ]
+
+
+def _latest_quotes_from_db(symbols: List[str], currency: str) -> List[PriceQuote]:
+    if currency.lower() != "usd":
+        return _fallback_quotes(symbols)
+
+    for factory in [TimescaleSessionLocal, SessionLocal]:
+        if factory is None:
+            continue
+        session = factory()
+        try:
+            latest: dict[str, MarketPrice] = {}
+            for symbol in symbols:
+                row = (
+                    session.execute(
+                        select(MarketPrice)
+                        .where(MarketPrice.symbol == symbol)
+                        .order_by(MarketPrice.timestamp.desc())
+                        .limit(1)
+                    )
+                    .scalars()
+                    .first()
+                )
+                if row:
+                    latest[symbol] = row
+
+            if not latest:
+                continue
+
+            return [
+                PriceQuote(
+                    symbol=symbol,
+                    price=Decimal(str(latest[symbol].price_usd)) if symbol in latest else Decimal("0"),
+                    market_cap=Decimal(str(latest[symbol].market_cap)) if symbol in latest else Decimal("0"),
+                    volume_24h=Decimal(str(latest[symbol].volume_24h)) if symbol in latest else Decimal("0"),
+                    last_updated=latest[symbol].timestamp if symbol in latest else dt.datetime.now(dt.timezone.utc),
+                )
+                for symbol in symbols
+            ]
+        except ProgrammingError:
+            continue
+        finally:
+            session.close()
+
+    return _fallback_quotes(symbols)
+
+
+def get_price_quotes(symbols: List[str], currency: str) -> List[PriceQuote]:
+    try:
+        return _get_price_quotes(symbols, currency)
+    except ValidationError:
+        raise
+    except Exception as exc:
+        if settings.environment.lower() in {"development", "dev", "local"}:
+            return _latest_quotes_from_db(symbols, currency)
+        raise AppError(
+            "Market data unavailable",
+            status_code=502,
+            details={"error": str(exc)},
+        )
+
+
 @router.get("/prices", response_model=PricesResponse)
 def get_prices(
     symbols: str = Query(..., description="Comma-separated symbols"),
@@ -85,7 +170,7 @@ def get_prices(
         raise ValidationError("At least one symbol is required")
 
     currency = vs_currency.lower()
-    quotes = _get_price_quotes(symbol_list, currency)
+    quotes = get_price_quotes(symbol_list, currency)
     return PricesResponse(currency=currency, data=quotes)
 
 
@@ -106,7 +191,7 @@ def get_portfolio(
         )
 
     symbols = [holding.symbol.upper() for holding in holdings]
-    quotes = {quote.symbol: quote for quote in _get_price_quotes(symbols, "usd")}
+    quotes = {quote.symbol: quote for quote in get_price_quotes(symbols, "usd")}
 
     portfolio_holdings = []
     total_value = Decimal("0")

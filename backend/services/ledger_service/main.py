@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from ledger_service.routes import accounts_router, reports_router, transactions_router
 from shared.config import get_settings
-from shared.database import ENGINE, TIMESCALE_ENGINE, health_check
+from shared.database import ENGINE, TIMESCALE_ENGINE, health_check as db_health_check
 from shared.exceptions import AppError, handle_exception
 from shared.logger import init_logging, set_request_id
 from shared.redis import get_redis_client
@@ -62,11 +62,11 @@ def _redis_health() -> bool:
 
 def _dependency_status() -> Dict[str, bool]:
     deps = {
-        "database": health_check(ENGINE),
+        "database": db_health_check(ENGINE),
         "redis": _redis_health(),
     }
     if TIMESCALE_ENGINE is not None:
-        deps["timescale"] = health_check(TIMESCALE_ENGINE)
+        deps["timescale"] = db_health_check(TIMESCALE_ENGINE)
     return deps
 
 

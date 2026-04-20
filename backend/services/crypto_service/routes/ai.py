@@ -12,10 +12,13 @@ from decimal import Decimal
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from crypto_service.dependencies import get_current_user_id
 from crypto_service.market import fetch_market_chart
+from crypto_service.models.ai_model import AIModel
+from crypto_service.models.enums import AIModelStatus
 from crypto_service.models.market_price import MarketPrice
 from crypto_service.schemas.predictions import PredictionRequest, PredictionResponse
 from shared.database import TimescaleSessionLocal, get_db
@@ -26,13 +29,19 @@ router = APIRouter(prefix="/api/v1/crypto/ai", tags=["crypto-ai"])
 _MODEL_VERSION = "baseline-returns-v1"
 
 
-def _store_history(db: Session, symbol: str, series: list[dict]) -> None:
-    sessions: list[Session] = []
-    if TimescaleSessionLocal is not None:
-        sessions.append(TimescaleSessionLocal())
-    sessions.append(db)
+def _active_model_version(db: Session) -> str:
+    model = db.execute(
+        select(AIModel)
+        .where(AIModel.status == AIModelStatus.ACTIVE)
+        .order_by(AIModel.deployment_date.desc())
+    ).scalars().first()
+    return model.version if model else _MODEL_VERSION
 
-    for session in sessions:
+
+def _store_history(db: Session, symbol: str, series: list[dict]) -> None:
+    session_factories = [TimescaleSessionLocal, None]
+    for factory in session_factories:
+        session = db if factory is None else factory()
         try:
             existing_ts = session.execute(
                 select(MarketPrice.timestamp).where(MarketPrice.symbol == symbol)
@@ -52,27 +61,34 @@ def _store_history(db: Session, symbol: str, series: list[dict]) -> None:
                     )
                 )
             session.commit()
+        except ProgrammingError:
+            session.rollback()
         finally:
             if session is not db:
                 session.close()
 
 
 def _load_prices(db: Session, symbol: str, limit: int = 90) -> list[MarketPrice]:
-    session = TimescaleSessionLocal() if TimescaleSessionLocal is not None else db
-    try:
-        return (
-            session.execute(
-                select(MarketPrice)
-                .where(MarketPrice.symbol == symbol)
-                .order_by(MarketPrice.timestamp.desc())
-                .limit(limit)
+    session_factories = [TimescaleSessionLocal, None]
+    for factory in session_factories:
+        session = db if factory is None else factory()
+        try:
+            return (
+                session.execute(
+                    select(MarketPrice)
+                    .where(MarketPrice.symbol == symbol)
+                    .order_by(MarketPrice.timestamp.desc())
+                    .limit(limit)
+                )
+                .scalars()
+                .all()
             )
-            .scalars()
-            .all()
-        )
-    finally:
-        if session is not db:
-            session.close()
+        except ProgrammingError:
+            continue
+        finally:
+            if session is not db:
+                session.close()
+    return []
 
 
 def _calculate_forecast(prices: list[MarketPrice], horizon_days: int) -> tuple[Decimal, list[Decimal]]:
@@ -130,5 +146,5 @@ def predict_price(
         horizon_days=payload.horizon_days,
         forecast=forecast,
         confidence_interval=interval,
-        model_version=_MODEL_VERSION,
+        model_version=_active_model_version(db),
     )

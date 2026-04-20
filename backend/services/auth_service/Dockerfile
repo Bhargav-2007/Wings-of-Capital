@@ -14,10 +14,10 @@ COPY backend/services/shared/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/services/shared /app/shared
-COPY backend/services/auth_service /app
+COPY backend/services/auth_service /app/auth_service
 
 ENV PYTHONUNBUFFERED=1
-ENV APP_MODULE="main:app"
+ENV APP_MODULE="auth_service.main:app"
 ENV PYTHONPATH="/app"
 
 EXPOSE 8001
@@ -25,4 +25,4 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8001/health')"
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "auth_service.main:app", "--host", "0.0.0.0", "--port", "8001"]

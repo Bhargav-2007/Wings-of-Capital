@@ -11,6 +11,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+os.environ.setdefault("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
+
 SERVICES_DIR = Path(__file__).resolve().parents[1] / "services"
 if str(SERVICES_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICES_DIR))
