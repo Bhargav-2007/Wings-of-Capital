@@ -63,7 +63,6 @@ class Router {
             // Render component
             const viewContainer = document.getElementById('view-container');
             if (viewContainer) {
-                viewContainer.innerHTML = '';
                 await route.component(viewContainer);
             }
             
@@ -81,44 +80,48 @@ const router = new Router();
 
 // Register routes
 router.register('/login', async (container) => {
-    container.innerHTML = await renderLogin();
+    await renderLogin(container);
 });
 
 router.register('/dashboard', async (container) => {
-    container.innerHTML = await renderDashboard();
+    await renderDashboard(container);
 }, true);
 
 router.register('/portfolio', async (container) => {
-    container.innerHTML = await renderPortfolio();
+    await renderPortfolio(container);
 }, true);
 
 router.register('/trading', async (container) => {
-    container.innerHTML = await renderTrading();
+    await renderTrading(container);
 }, true);
 
 router.register('/analytics', async (container) => {
-    container.innerHTML = await renderAnalytics();
+    await renderAnalytics(container);
 }, true);
 
-// Stub render functions (will be implemented in respective view files)
-async function renderLogin() {
-    return '<div>Login view - placeholder</div>';
-}
+function renderToasts(notifications) {
+    const container = document.getElementById('toast-container');
+    if (!container) {
+        return;
+    }
 
-async function renderDashboard() {
-    return '<div>Dashboard view - placeholder</div>';
-}
+    const colorMap = {
+        success: 'bg-green-600',
+        danger: 'bg-red-600',
+        warning: 'bg-amber-500',
+        info: 'bg-blue-600',
+    };
 
-async function renderPortfolio() {
-    return '<div>Portfolio view - placeholder</div>';
-}
-
-async function renderTrading() {
-    return '<div>Trading view - placeholder</div>';
-}
-
-async function renderAnalytics() {
-    return '<div>Analytics view - placeholder</div>';
+    container.innerHTML = notifications
+        .map((toast) => {
+            const color = colorMap[toast.type] || colorMap.info;
+            return `
+                <div class="${color} text-white px-4 py-3 rounded-lg shadow-lg">
+                    ${toast.message}
+                </div>
+            `;
+        })
+        .join('');
 }
 
 // Initialize app on DOM ready
@@ -141,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
+
+        renderToasts(state.notifications);
     });
     
     // Setup theme toggle

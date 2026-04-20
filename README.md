@@ -253,7 +253,8 @@ wings-of-capital/
     ├── deploy.sh                    # Production deployment
     ├── smoke_test.sh                # Kong + service smoke checks
     ├── dev_token.py                 # Generate dev JWT token
-    └── seed_crypto_data.py          # Seed crypto sample data
+    ├── seed_crypto_data.py          # Seed crypto sample data
+    └── seed_and_token.py            # Seed data + generate token
 ```
 
 ---
@@ -352,6 +353,12 @@ Run the smoke test:
 
 ```bash
 ./scripts/smoke_test.sh
+```
+
+Seed data and generate a token in one step:
+
+```bash
+python scripts/seed_and_token.py --days 30
 ```
 
 ### **Option 3: Kubernetes Deployment**

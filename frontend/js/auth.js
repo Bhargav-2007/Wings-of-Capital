@@ -114,6 +114,24 @@ class AuthManager {
             throw error;
         }
     }
+
+    /**
+     * Use a pre-generated access token for development
+     */
+    static useToken(accessToken, userId = 'dev-user', email = 'dev@local') {
+        if (!accessToken) {
+            throw new Error('Access token is required');
+        }
+
+        const user = {
+            id: userId,
+            email,
+        };
+
+        stateManager.setUser(user, accessToken, null);
+        stateManager.addNotification('Token stored for this session', 'success');
+        return user;
+    }
     
     /**
      * Enable MFA

@@ -43,7 +43,7 @@ class APIClient {
     /**
      * Make HTTP request with retry and error handling
      */
-    async request(endpoint, options = {}, retries = 3) {
+    async request(endpoint, options = {}, retries = 3, allowRefresh = true) {
         const url = `${this.baseURL}${endpoint}`;
         const requestOptions = this.buildRequestOptions(options);
         
@@ -61,6 +61,18 @@ class APIClient {
             
             // Handle 401 Unauthorized (token expired)
             if (response.status === 401) {
+                const state = stateManager.getState();
+                if (allowRefresh && state.tokens?.refreshToken) {
+                    try {
+                        await AuthManager.refreshToken();
+                        return this.request(endpoint, options, retries, false);
+                    } catch (refreshError) {
+                        stateManager.clearUser();
+                        window.location.href = '/#/login';
+                        throw refreshError;
+                    }
+                }
+
                 stateManager.clearUser();
                 window.location.href = '/#/login';
                 throw new Error('Session expired. Please login again.');

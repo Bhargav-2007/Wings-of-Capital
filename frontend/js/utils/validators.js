@@ -8,9 +8,3 @@ const Validators = {
     password: (password) => password.length >= 12,
     number: (number) => !isNaN(number) && number !== '',
 };
-
-const Formatters = {
-    currency: (value) => `$${parseFloat(value).toFixed(2)}`,
-    percent: (value) => `${parseFloat(value).toFixed(2)}%`,
-    date: (date) => new Date(date).toLocaleDateString(),
-};
