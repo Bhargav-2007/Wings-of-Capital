@@ -10,6 +10,7 @@ from decimal import Decimal
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+import uuid
 
 from ledger_service.models.enums import EntryType
 
@@ -31,9 +32,8 @@ class TransactionCreate(BaseModel):
 
 class TransactionLineOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
-    id: str
-    account_id: str
+    id: str | uuid.UUID
+    account_id: str | uuid.UUID
     entry_type: EntryType
     amount: Decimal
     currency: str
@@ -43,11 +43,10 @@ class TransactionLineOut(BaseModel):
 
 class TransactionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
-    id: str
+    id: str | uuid.UUID
     description: Optional[str]
     reference: Optional[str]
     transaction_date: dt.datetime
     posted_at: dt.datetime
-    created_by: str
+    created_by: str | uuid.UUID
     lines: List[TransactionLineOut]

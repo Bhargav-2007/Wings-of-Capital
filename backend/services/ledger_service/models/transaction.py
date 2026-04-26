@@ -8,7 +8,7 @@ from __future__ import annotations
 import datetime as dt
 
 from sqlalchemy import DateTime, String
-from sqlalchemy.dialects.postgresql import UUID
+from shared.db_types import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.models import BaseModel

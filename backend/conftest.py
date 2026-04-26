@@ -2,6 +2,22 @@ import os
 import sys
 import pytest
 
+# Fail fast on Python versions known to be incompatible with the pinned SQLAlchemy
+# used by this repo's tests. SQLAlchemy's typing internals may not be compatible
+# with Python 3.14 in older releases; provide a clear actionable message.
+if sys.version_info >= (3, 14):
+    raise RuntimeError(
+        "Python 3.14+ is not supported by the current test configuration.\n"
+        "Please create a virtualenv using Python 3.11 (recommended) or 3.12 and re-run tests.\n"
+        "Example:\n"
+        "  sudo apt install -y python3.11 python3.11-venv python3.11-dev\n"
+        "  python3.11 -m venv .venv\n"
+        "  source .venv/bin/activate\n"
+        "  python -m pip install --upgrade pip\n"
+        "  pip install -r backend/tests/requirements-dev.txt\n"
+        "  pytest backend/services/auth_service/tests/ -v\n"
+    )
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -12,9 +28,9 @@ os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
 os.environ.setdefault("BCRYPT_ROUNDS", "4")
 os.environ.setdefault("PASSWORD_MIN_LENGTH", "1")
 
-# Make the `services` directory importable (so packages like `auth_service` resolve)
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-SERVICES_PATH = os.path.join(REPO_ROOT, "services")
+# Make the `backend/services` directory importable (so packages like `auth_service` resolve)
+BACKEND_DIR = os.path.dirname(__file__)
+SERVICES_PATH = os.path.join(BACKEND_DIR, "services")
 if SERVICES_PATH not in sys.path:
     sys.path.insert(0, SERVICES_PATH)
 
@@ -39,6 +55,9 @@ import shared.redis as _redis  # type: ignore
 class _FakeRedis:
     def __init__(self):
         self._store = {}
+
+    def ping(self):
+        return True
 
     def get(self, key):
         return self._store.get(key)
@@ -73,7 +92,32 @@ try:
     _auth_utils.send_email = lambda *a, **k: None
     _auth_utils.record_audit_log = lambda *a, **k: None
 except Exception:
-    # If the auth service isn't importable yet, tests that need it will import later
+    pass
+
+# Monkeypatch verification token helpers to avoid requiring `python-jose`/cryptography in tests
+try:
+    import auth_service.utils.tokens as _tokens  # type: ignore
+
+    def _fake_create_verification_token(subject: str, expires_hours: int = 24) -> str:
+        return f"fake-token:{subject}"
+
+    def _fake_decode_verification_token(token: str) -> dict:
+        if token.startswith("fake-token:"):
+            return {"sub": token.split(":", 1)[1]}
+        raise RuntimeError("Invalid token")
+
+    _tokens.create_verification_token = _fake_create_verification_token
+    _tokens.decode_verification_token = _fake_decode_verification_token
+except Exception:
+    pass
+
+# Monkeypatch MFA encrypt/decrypt to avoid `cryptography` dependency during tests
+try:
+    import auth_service.utils.mfa as _mfa_utils  # type: ignore
+
+    _mfa_utils.encrypt_secret = lambda s: s
+    _mfa_utils.decrypt_secret = lambda s: s
+except Exception:
     pass
 
 
@@ -137,12 +181,3 @@ def test_client(db_session):
         return TestClient(app)
 
     return _make_client
-# Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved.
-# Licensed under the Apache License, Version 2.0.
-
-import os
-
-
-def pytest_configure() -> None:
-    os.environ.setdefault("DATABASE_URL", "postgresql://user:pass@localhost:5432/woc")
-    os.environ.setdefault("JWT_SECRET_KEY", "unit-test-secret")

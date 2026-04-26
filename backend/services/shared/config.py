@@ -19,6 +19,8 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        populate_by_name=True,
+        extra="allow",
     )
 
     # Core service configuration
@@ -115,6 +117,14 @@ class Settings(BaseSettings):
     @property
     def cors_headers_list(self) -> List[str]:
         return [item for item in self.cors_allow_headers.split(",") if item]
+
+    def __init__(self, **values: object) -> None:
+        # Capture explicitly-provided constructor values so they can override
+        # environment-derived defaults which BaseSettings may load.
+        explicit_jwt = values.get("jwt_secret_key")
+        super().__init__(**values)
+        if explicit_jwt is not None:
+            object.__setattr__(self, "jwt_secret_key", explicit_jwt)
 
     @property
     def jwt_signing_key(self) -> str:

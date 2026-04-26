@@ -18,11 +18,16 @@ from .exceptions import AuthError, RateLimitError
 from .redis import RedisClient
 
 _settings = get_settings()
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use PBKDF2-SHA256 to avoid bcrypt binary/version issues in test environments
+_pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"],
+    deprecated="auto",
+    pbkdf2_sha256__default_rounds=_settings.bcrypt_rounds,
+)
 
 
 def hash_password(password: str) -> str:
-    return _pwd_context.hash(password, rounds=_settings.bcrypt_rounds)
+    return _pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

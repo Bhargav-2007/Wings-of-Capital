@@ -9,7 +9,7 @@ import datetime as dt
 from decimal import Decimal
 
 from sqlalchemy import DateTime, Numeric, String
-from sqlalchemy.dialects.postgresql import UUID
+from shared.db_types import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.models import BaseModel

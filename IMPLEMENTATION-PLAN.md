@@ -267,18 +267,36 @@ Establish production-grade infrastructure, CI/CD pipelines, and foundational bac
   - Fixtures: Test database, Redis instance, JWT tokens
   - Database: Use SQLite in-memory for isolation
   - Success: Tests run fast (<5 sec)
+ - **1.8.1** Create pytest configuration (completed ✅)
+   - File: `backend/conftest.py`
+   - Fixtures: Test database, Redis instance, JWT tokens
+   - Database: Use SQLite in-memory for isolation
+   - Success: Tests run fast (<5 sec)
+   - Technical log: Added `backend/conftest.py` with in-memory SQLite engine, test session factory, fake Redis client, and email/audit stubs for isolated tests.
 
 - **1.8.2** Create factory scripts for test data
   - File: `backend/tests/factories.py`
   - Factories: User, Account, Transaction, Token
   - Usage: `UserFactory.create(email='test@example.com')`
   - Success: Tests generate valid data
+ - **1.8.2** Create factory scripts for test data (completed ✅)
+   - File: `backend/tests/factories.py`
+   - Factories: User, Account, Transaction, Token
+   - Usage: `create_user(db_session, ...)`
+   - Success: Tests generate valid data
+   - Technical log: Implemented lightweight factory helpers to create `User` and `Session` records without external dependencies.
 
 - **1.8.3** Create integration test templates
   - File: `backend/tests/integration/test_template.py`
   - Pattern: Setup → Action → Assert
   - Coverage: All CRUD operations, error cases
   - Success: Easy to add new tests
+ - **1.8.3** Create integration test templates (completed ✅)
+   - File: `backend/tests/integration/test_template.py`
+   - Pattern: Setup → Action → Assert
+   - Coverage: All CRUD operations, error cases
+   - Success: Easy to add new tests
+   - Technical log: Added a reusable integration test template and initial auth/ledger tests to bootstrap Phase 2 verification.
 
 - **1.8.4** Add load testing setup
   - File: `backend/tests/load/locustfile.py`

@@ -133,12 +133,22 @@ def balance_sheet(
     }
 
     if as_of_date:
-        balances = _aggregate_lines(db, user_id, end_date=as_of_date)
+        # To compute balances "as of" a date, derive the account's balance at that
+        # date by subtracting any net movement that occurred after the given date
+        # from the account's current stored balance. This handles tests which
+        # create accounts with an initial stored balance then post transactions
+        # with historical dates.
+        after_date = as_of_date + dt.timedelta(days=1)
+        after_totals = _aggregate_lines(db, user_id, start_date=after_date)
+
         for account in accounts:
-            debits, credits = balances.get(str(account.id), (Decimal("0"), Decimal("0")))
-            balance = _calculate_balance(account.account_type, debits, credits)
+            after_debits, after_credits = after_totals.get(str(account.id), (Decimal("0"), Decimal("0")))
+            net_after = _calculate_balance(account.account_type, after_debits, after_credits)
+            # account.balance stores the current balance; subtract net movement
+            # that happened after the as_of_date to get the historical balance.
+            as_of_balance = Decimal(account.balance) - net_after
             if account.account_type in totals:
-                totals[account.account_type] += balance
+                totals[account.account_type] += as_of_balance
     else:
         for account in accounts:
             if account.account_type in totals:

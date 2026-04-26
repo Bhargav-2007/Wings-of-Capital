@@ -84,7 +84,13 @@ def get_balance_sheet(
     as_of_date: dt.date | None = Query(default=None),
 ) -> BalanceSheetReport:
     effective_date = as_of_date or dt.date.today()
-    total_assets, total_liabilities, total_equity = balance_sheet(db, user_id, effective_date)
+
+    if as_of_date is None:
+        # No date provided -> use the stored account balances (current state)
+        total_assets, total_liabilities, total_equity = balance_sheet(db, user_id, None)
+    else:
+        # Date provided -> compute balances from transaction history up to that date
+        total_assets, total_liabilities, total_equity = balance_sheet(db, user_id, as_of_date)
 
     return BalanceSheetReport(
         as_of_date=effective_date,

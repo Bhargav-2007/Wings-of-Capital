@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import uuid
 from typing import Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -35,7 +36,7 @@ class UserBase(BaseSchema):
 
 
 class UserOut(UserBase):
-    id: str
+    id: str | uuid.UUID
     is_active: bool
     is_verified: bool
     mfa_enabled: bool
