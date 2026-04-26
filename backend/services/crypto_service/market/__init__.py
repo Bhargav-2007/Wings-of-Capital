@@ -2,3 +2,4 @@
 # Licensed under the Apache License, Version 2.0.
 
 from .coingecko import fetch_market_chart, fetch_prices  # noqa: F401
+from .frankfurter import fetch_latest_rates  # noqa: F401

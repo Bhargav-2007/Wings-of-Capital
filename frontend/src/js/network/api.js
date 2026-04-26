@@ -16,5 +16,9 @@ window.WOC_API = {
     const res = await window.WOC_HTTP('/api/v1/ledger/transactions', { method: 'GET' });
     return res.json();
   },
+  getFxRates: async function(base = 'EUR') {
+    const res = await window.WOC_HTTP(`/api/v1/crypto/fx/latest?base=${base}`, { method: 'GET' });
+    return res.json();
+  },
   // Add more endpoints as needed
 };
