@@ -1,0 +1,199 @@
+<!-- Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved. -->
+<!-- Licensed under the Apache License, Version 2.0. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Wings of Capital - Account Settings">
+  <meta name="theme-color" content="#111827">
+
+  <title>Accounts & Settings - Wings of Capital</title>
+
+  <script src="/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="/css/design-system.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+</head>
+<body class="app-shell">
+
+  <!-- Sidebar injected by JS -->
+  <aside class="app-sidebar"></aside>
+
+  <main class="app-main">
+    
+    <!-- Action Bar -->
+    <header class="action-bar z-sticky">
+      <div class="action-bar-left">
+        <h2 class="text-xl font-bold">Account Settings</h2>
+      </div>
+    </header>
+
+    <div class="page-content max-w-4xl">
+      
+      <div class="grid-3">
+        
+        <!-- Left Nav (1 col) -->
+        <div class="col-span-1 d-flex flex-col gap-2">
+          <button class="nav-item active text-left" id="tab-profile">
+            <span class="nav-item-icon">👤</span> Profile Details
+          </button>
+          <button class="nav-item text-left" id="tab-security">
+            <span class="nav-item-icon">🛡️</span> Security & MFA
+          </button>
+          <button class="nav-item text-left" id="tab-api">
+            <span class="nav-item-icon">🔑</span> API Keys
+          </button>
+          <button class="nav-item text-left" id="tab-preferences">
+            <span class="nav-item-icon">⚙️</span> Preferences
+          </button>
+        </div>
+
+        <!-- Main Content Area (2 cols) -->
+        <div class="col-span-2">
+          
+          <!-- Profile Section -->
+          <section id="section-profile" class="card animate-fade-in">
+            <div class="card-header mb-5 pb-4">
+               <h3 class="card-title">Profile Details</h3>
+               <p class="card-subtitle">Manage your personal information</p>
+            </div>
+            
+            <form id="form-profile" novalidate>
+              <div class="d-flex gap-4 mb-6 items-center">
+                <div class="sidebar-avatar" style="width: 80px; height: 80px; font-size: 24px;" id="profile-avatar">--</div>
+                <div>
+                  <button type="button" class="btn btn-secondary btn-sm mb-2">Upload New Picture</button>
+                  <p class="text-xs text-tertiary">JPG or PNG. Max size 2MB.</p>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="profile-name" name="name" required placeholder="John Doe">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="profile-email" name="email" required data-validate="email" readonly class="bg-surface-2 text-tertiary cursor-not-allowed">
+                <div class="form-hint">Email address cannot be changed directly. Contact support.</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" id="profile-phone" name="phone" placeholder="+1 (555) 000-0000">
+              </div>
+
+              <div class="divider"></div>
+              
+              <div class="d-flex justify-end">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Security Section -->
+          <section id="section-security" class="card animate-fade-in d-none">
+            <div class="card-header mb-5 pb-4">
+               <h3 class="card-title">Security & MFA</h3>
+               <p class="card-subtitle">Protect your account</p>
+            </div>
+
+            <div class="d-flex items-center justify-between p-4 border border-subtle rounded-lg mb-6 bg-surface-2">
+              <div>
+                <h4 class="font-semi mb-1">Two-Factor Authentication (2FA)</h4>
+                <p class="text-sm text-tertiary">Add an extra layer of security using an authenticator app.</p>
+              </div>
+              <div>
+                <span class="badge badge-danger mb-2 d-block text-center" id="mfa-status-badge">Disabled</span>
+                <button class="btn btn-outline-primary btn-sm" id="btn-enable-mfa">Enable 2FA</button>
+              </div>
+            </div>
+
+            <h4 class="font-semi mb-4">Change Password</h4>
+            <form id="form-password" novalidate>
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" name="currentPassword" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="new-password" name="newPassword" required data-validate="password">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" name="confirmPassword" required data-validate="match" data-match-target="new-password">
+              </div>
+              
+              <div class="d-flex justify-end">
+                <button type="submit" class="btn btn-primary">Update Password</button>
+              </div>
+            </form>
+          </section>
+          
+          <!-- API Keys Section -->
+          <section id="section-api" class="card animate-fade-in d-none">
+             <div class="card-header mb-5 pb-4">
+               <h3 class="card-title">API Keys</h3>
+               <p class="card-subtitle">Manage keys for programmatic access</p>
+            </div>
+            <div class="text-center p-8 border border-subtle rounded-lg border-dashed">
+              <div class="text-4xl mb-4">🔑</div>
+              <h4 class="font-semi mb-2">No API Keys Generated</h4>
+              <p class="text-sm text-tertiary mb-4">Create an API key to access Wings of Capital programmatically.</p>
+              <button class="btn btn-primary">Generate New Key</button>
+            </div>
+          </section>
+
+          <!-- Preferences Section -->
+          <section id="section-preferences" class="card animate-fade-in d-none">
+             <div class="card-header mb-5 pb-4">
+               <h3 class="card-title">Preferences</h3>
+               <p class="card-subtitle">Customize your experience</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Base Currency</label>
+              <select class="form-select w-full max-w-xs">
+                <option value="USD" selected>USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Theme</label>
+              <div class="d-flex gap-4">
+                <button class="btn btn-secondary flex-1" onclick="ThemeManager.set('dark')">Dark Mode</button>
+                <button class="btn btn-secondary flex-1" onclick="ThemeManager.set('light')">Light Mode</button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <!-- Core Scripts -->
+  <script src="/js/state.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils/validators.js"></script>
+  
+  <!-- Components -->
+  <script src="/js/components/sidebar.js"></script>
+  <script src="/js/components/form.js"></script>
+  
+  <!-- View Logic -->
+  <script src="/js/views/accounts.js"></script>
+
+</body>
+</html>

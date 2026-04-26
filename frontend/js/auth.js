@@ -2,166 +2,165 @@
 // Licensed under the Apache License, Version 2.0.
 
 /**
- * Wings of Capital - Authentication Management
- * Handles login, logout, token refresh, and MFA
+ * Wings of Capital — Auth Manager
+ *
+ * SECURITY FIXES vs original:
+ *  - JWT payload decoded client-side to extract expiry (exp claim)
+ *    so stateManager can enforce token validity window
+ *  - useToken() development helper validates JWT structure before storing
+ *  - No tokens/passwords ever written to console
+ *  - MPA: redirects use window.location.href to named HTML files
  */
 
+'use strict';
+
+// ── JWT decode (no verification — just payload extraction) ───────
+function decodeJwtPayload(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    const base64    = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonStr   = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonStr);
+  } catch {
+    return null;
+  }
+}
+
+/** Returns seconds until expiry from the JWT exp claim. */
+function expiresInFromToken(token) {
+  const payload = decodeJwtPayload(token);
+  if (!payload?.exp) return 900;   // Default 15 min if no exp claim
+  const remaining = payload.exp - Math.floor(Date.now() / 1000);
+  return Math.max(remaining, 0);
+}
+
 class AuthManager {
-    /**
-     * Login with email and password
-     */
-    static async login(email, password) {
-        try {
-            stateManager.setLoading(true);
-            const response = await apiClient.post('/auth/login', { email, password });
-            
-            stateManager.setUser(
-                response.user,
-                response.access_token,
-                response.refresh_token
-            );
-            
-            stateManager.addNotification('Logged in successfully', 'success');
-            return response.user;
-        } catch (error) {
-            stateManager.addNotification(error.message, 'danger');
-            throw error;
-        } finally {
-            stateManager.setLoading(false);
-        }
-    }
-    
-    /**
-     * Logout
-     */
-    static async logout() {
-        try {
-            stateManager.setLoading(true);
-            await apiClient.post('/auth/logout', {});
-            stateManager.clearUser();
-            stateManager.addNotification('Logged out successfully', 'success');
-        } catch (error) {
-            stateManager.addNotification(error.message, 'danger');
-        } finally {
-            stateManager.setLoading(false);
-        }
-    }
-    
-    /**
-     * Register new user
-     */
-    static async register(email, password, passwordConfirm) {
-        try {
-            stateManager.setLoading(true);
-            
-            if (password !== passwordConfirm) {
-                throw new Error('Passwords do not match');
-            }
-            
-            const response = await apiClient.post('/auth/register', {
-                email,
-                password,
-            });
-            
-            stateManager.addNotification('Registration successful. Please check your email to verify.', 'success');
-            return response;
-        } catch (error) {
-            stateManager.addNotification(error.message, 'danger');
-            throw error;
-        } finally {
-            stateManager.setLoading(false);
-        }
-    }
-    
-    /**
-     * Refresh access token
-     */
-    static async refreshToken() {
-        try {
-            const state = stateManager.getState();
-            const refreshToken = state.tokens?.refreshToken;
-            
-            if (!refreshToken) {
-                throw new Error('No refresh token available');
-            }
-            
-            const response = await apiClient.post('/auth/refresh', {
-                refresh_token: refreshToken,
-            });
-            
-            stateManager.setState({
-                tokens: {
-                    accessToken: response.access_token,
-                    refreshToken: response.refresh_token,
-                },
-            });
-            
-            return response;
-        } catch (error) {
-            stateManager.clearUser();
-            throw error;
-        }
-    }
-    
-    /**
-     * Get current user profile
-     */
-    static async getMe() {
-        try {
-            return await apiClient.get('/auth/me');
-        } catch (error) {
-            console.error('Failed to fetch user profile:', error);
-            throw error;
-        }
-    }
 
-    /**
-     * Use a pre-generated access token for development
-     */
-    static useToken(accessToken, userId = 'dev-user', email = 'dev@local') {
-        if (!accessToken) {
-            throw new Error('Access token is required');
-        }
+  // ── Login ──────────────────────────────────────────────────────
 
-        const user = {
-            id: userId,
-            email,
-        };
+  static async login(email, password) {
+    stateManager.setLoading(true);
+    try {
+      const data = await apiClient.post('/auth/login', { email, password });
 
-        stateManager.setUser(user, accessToken, null);
-        stateManager.addNotification('Token stored for this session', 'success');
-        return user;
+      const expiresIn = data.expires_in || expiresInFromToken(data.access_token);
+      stateManager.setUser(data.user, data.access_token, data.refresh_token, expiresIn);
+      stateManager.addNotification('Welcome back!', 'success');
+
+      return data.user;
+    } catch (err) {
+      stateManager.addNotification(err.message, 'danger');
+      throw err;
+    } finally {
+      stateManager.setLoading(false);
     }
-    
-    /**
-     * Enable MFA
-     */
-    static async enableMFA() {
-        try {
-            stateManager.setLoading(true);
-            return await apiClient.post('/auth/mfa/enable', {});
-        } finally {
-            stateManager.setLoading(false);
-        }
+  }
+
+  // ── Register ───────────────────────────────────────────────────
+
+  static async register(email, password, passwordConfirm) {
+    stateManager.setLoading(true);
+    try {
+      if (password !== passwordConfirm) {
+        throw new Error('Passwords do not match');
+      }
+      const data = await apiClient.post('/auth/register', { email, password });
+      stateManager.addNotification(
+        'Account created! Check your email to verify.',
+        'success'
+      );
+      return data;
+    } catch (err) {
+      stateManager.addNotification(err.message, 'danger');
+      throw err;
+    } finally {
+      stateManager.setLoading(false);
     }
-    
-    /**
-     * Verify MFA code
-     */
-    static async verifyMFA(code) {
-        try {
-            stateManager.setLoading(true);
-            return await apiClient.post('/auth/mfa/verify', { code });
-        } finally {
-            stateManager.setLoading(false);
-        }
+  }
+
+  // ── Logout ─────────────────────────────────────────────────────
+
+  static async logout() {
+    stateManager.setLoading(true);
+    try {
+      await apiClient.post('/auth/logout', {});
+    } catch {
+      // Best-effort — clear local state regardless
+    } finally {
+      stateManager.clearUser();
+      stateManager.setLoading(false);
+      window.location.href = '/index.html';
     }
-    
-    /**
-     * Check if user is authenticated
-     */
-    static isAuthenticated() {
-        const state = stateManager.getState();
-        return state.isAuthenticated && !!state.tokens?.accessToken;
+  }
+
+  // ── Get current user ───────────────────────────────────────────
+
+  static async getMe() {
+    return apiClient.get('/auth/me');
+  }
+
+  // ── Check auth (used by page guards) ──────────────────────────
+
+  static isAuthenticated() {
+    return stateManager.getState().isAuthenticated &&
+           stateManager.isTokenValid();
+  }
+
+  /**
+   * Guard — call at the top of every protected page's script.
+   * If not authenticated, redirects to login immediately.
+   */
+  static requireAuth(redirectTo = '/index.html') {
+    if (!AuthManager.isAuthenticated()) {
+      window.location.replace(redirectTo);
+      return false;
     }
+    return true;
+  }
+
+  // ── MFA ────────────────────────────────────────────────────────
+
+  static async enableMFA() {
+    stateManager.setLoading(true);
+    try {
+      return await apiClient.post('/auth/mfa/enable', {});
+    } finally {
+      stateManager.setLoading(false);
+    }
+  }
+
+  static async verifyMFA(code) {
+    stateManager.setLoading(true);
+    try {
+      return await apiClient.post('/auth/mfa/verify', { code });
+    } finally {
+      stateManager.setLoading(false);
+    }
+  }
+
+  // ── Dev helper (development only) ─────────────────────────────
+
+  /**
+   * Inject a pre-generated JWT for local development.
+   * Validates JWT structure before storing.
+   */
+  static devUseToken(token, userId = 'dev-001', email = 'dev@woc.local') {
+    if (typeof token !== 'string' || token.split('.').length !== 3) {
+      console.error('[AuthManager.devUseToken] Invalid JWT format');
+      return null;
+    }
+    const payload    = decodeJwtPayload(token);
+    const expiresIn  = expiresInFromToken(token);
+    const user       = { id: payload?.sub || userId, email: payload?.email || email, role: payload?.role || 'user' };
+
+    stateManager.setUser(user, token, null, expiresIn);
+    stateManager.addNotification('[DEV] Token injected', 'info', 3000);
+    return user;
+  }
 }

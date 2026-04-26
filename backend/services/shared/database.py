@@ -18,6 +18,12 @@ _settings = get_settings()
 
 
 def _create_engine(database_url: str) -> Engine:
+    if database_url.startswith("sqlite"):
+        return create_engine(
+            database_url,
+            connect_args={"check_same_thread": False},
+            poolclass=None,
+        )
     return create_engine(
         database_url,
         pool_size=_settings.database_pool_size,

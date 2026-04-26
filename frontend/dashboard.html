@@ -1,0 +1,180 @@
+<!-- Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved. -->
+<!-- Licensed under the Apache License, Version 2.0. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Wings of Capital - Dashboard">
+  <meta name="theme-color" content="#111827">
+
+  <title>Dashboard - Wings of Capital</title>
+
+  <script src="/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="/css/design-system.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="app-shell">
+
+  <!-- Sidebar injected by JS -->
+  <aside class="app-sidebar"></aside>
+
+  <main class="app-main">
+    
+    <!-- Action Bar -->
+    <header class="action-bar z-sticky">
+      <div class="action-bar-left">
+        <h2 class="text-xl font-bold">Dashboard Overview</h2>
+      </div>
+      <div class="action-bar-right">
+        <div class="input-group has-icon" style="width: 200px;">
+          <span class="input-icon">📅</span>
+          <select id="period-select" class="form-select bg-surface-2 border-none">
+            <option value="today">Today</option>
+            <option value="7d" selected>Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+            <option value="ytd">Year to Date</option>
+          </select>
+        </div>
+        <button class="btn btn-outline-primary btn-sm">
+          <span class="nav-item-icon">⚙️</span> Manage
+        </button>
+        <button class="btn btn-primary btn-sm">
+          <span class="nav-item-icon">➕</span> Add Widget
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="page-content">
+      <div class="dashboard-grid">
+        
+        <!-- WIDGET 1: AI Insights (Glassmorphism) -->
+        <div class="widget widget-ai">
+          <div class="widget-header">
+            <h3 class="widget-title"><span class="widget-title-icon bg-primary text-inverse">🤖</span> Neuro AI</h3>
+            <button class="widget-menu-btn" aria-label="Menu">⋮</button>
+          </div>
+          <div class="flex-1 d-flex flex-col justify-center">
+            <p class="ai-insight-text mb-4" id="ai-insight-content">
+              Analyzing portfolio vectors...
+            </p>
+            <div class="ai-insight-meta">
+              <div class="ai-pulse"></div>
+              <span>Model: <strong class="text-primary font-mono" id="ai-model-version">v2.4.1</strong></span>
+              <span class="ml-auto">Confidence: <strong id="ai-confidence-text">--%</strong></span>
+            </div>
+            <div class="ai-confidence-bar">
+              <div class="ai-confidence-fill" id="ai-confidence-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WIDGET 2: Balance Overview (Line Chart) -->
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title"><span class="widget-title-icon bg-surface-2">💵</span> Net Balance</h3>
+            <div class="period-tabs">
+              <button class="period-tab active" data-period="1D">1D</button>
+              <button class="period-tab" data-period="1W">1W</button>
+              <button class="period-tab" data-period="1M">1M</button>
+            </div>
+          </div>
+          <div>
+            <div class="balance-amount" id="total-balance">--</div>
+            <div class="balance-change positive mt-1" id="balance-change">
+              <span>↑</span> <span id="balance-change-val">--</span> (<span id="balance-change-pct">--</span>) Today
+            </div>
+          </div>
+          <div class="chart-container chart-container-sm mt-2">
+            <canvas id="balanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- WIDGET 3: Earnings (Donut Chart) -->
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title"><span class="widget-title-icon bg-surface-2">📈</span> Asset Allocation</h3>
+            <button class="widget-menu-btn" aria-label="Menu">⋮</button>
+          </div>
+          <div class="d-flex items-center gap-4 h-full">
+            <div class="chart-container chart-container-sm" style="width: 140px; flex-shrink: 0;">
+              <canvas id="earningsChart"></canvas>
+              <!-- Center Text via absolute positioning -->
+               <div class="donut-center">
+                 <div class="donut-center-value text-xl" id="donut-center-val">--</div>
+               </div>
+            </div>
+            <div class="earnings-legend flex-1" id="allocation-legend">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- WIDGET 4: Transactions (Spans 2 columns) -->
+        <div class="widget widget-transactions">
+          <div class="widget-header">
+            <h3 class="widget-title"><span class="widget-title-icon bg-surface-2">🔄</span> Recent Activity</h3>
+            <a href="/accounts.html" class="btn btn-ghost btn-sm">View All →</a>
+          </div>
+          
+          <div class="tx-header">
+            <span></span>
+            <span>Asset / Description</span>
+            <span>Category</span>
+            <span>Date</span>
+            <span class="text-right">Amount</span>
+          </div>
+          
+          <div class="tx-list" id="recent-tx-list">
+             <div class="text-center p-6 text-tertiary skeleton" style="min-height: 200px;">Loading transactions...</div>
+          </div>
+        </div>
+
+        <!-- WIDGET 5: Spending (Bar Chart) -->
+        <div class="widget widget-spending">
+          <div class="widget-header">
+            <h3 class="widget-title"><span class="widget-title-icon bg-surface-2">📊</span> Cash Flow</h3>
+            <button class="widget-menu-btn" aria-label="Menu">⋮</button>
+          </div>
+          <div>
+             <div class="text-xs text-tertiary uppercase tracking-wider mb-1">Net Flow (30d)</div>
+             <div class="spending-total text-success" id="net-flow-val">--</div>
+          </div>
+          <div class="chart-container chart-container-md mt-2">
+            <canvas id="spendingChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <!-- Core Scripts -->
+  <script src="/js/state.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils/formatters.js"></script>
+  <script src="/js/utils/chart-helpers.js"></script>
+  
+  <!-- Components -->
+  <script src="/js/components/sidebar.js"></script>
+  <script src="/js/components/charts.js"></script>
+  
+  <!-- View Logic -->
+  <script src="/js/views/dashboard.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,342 @@
+/* ============================================================
+   Wings of Capital — Dashboard CSS
+   Specific grid layout, widget styles, action bar, charts
+   Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved.
+   Licensed under the Apache License, Version 2.0.
+   ============================================================ */
+
+/* ──────────────────────────────────────────────────────────────
+   DASHBOARD GRID
+   3-column asymmetric layout:
+   - Row 1: AI Insights | Balance Overview | Earnings (1:1:1)
+   - Row 2: Transactions (span 2) | Spending (span 1)
+   ────────────────────────────────────────────────────────────── */
+.dashboard-grid {
+  display:               grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows:    auto auto;
+  gap:                   var(--grid-gap);
+  padding:               var(--space-6);
+  min-height:            0;
+  align-items:           start;
+}
+
+/* Widget spanning */
+.widget-transactions { grid-column: 1 / 3; }   /* span 2 columns */
+.widget-spending     { grid-column: 3 / 4; }   /* 1 column */
+
+/* ──────────────────────────────────────────────────────────────
+   WIDGET BASE
+   ────────────────────────────────────────────────────────────── */
+.widget {
+  background:    var(--color-surface-1);
+  border:        1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding:       var(--space-5) var(--space-6);
+  box-shadow:    var(--shadow-sm);
+  display:       flex;
+  flex-direction:column;
+  gap:           var(--space-4);
+  transition:
+    box-shadow   var(--duration-base) var(--ease-default),
+    border-color var(--duration-base) var(--ease-default);
+  animation:     woc-slide-up var(--duration-slow) var(--ease-spring) both;
+}
+.widget:hover { box-shadow: var(--shadow-md); }
+
+.widget-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  flex-shrink:     0;
+}
+.widget-title {
+  font-size:   var(--text-sm);
+  font-weight: var(--weight-semi);
+  color:       var(--color-text-tertiary);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-2);
+}
+.widget-title-icon {
+  width:         28px;
+  height:        28px;
+  border-radius: var(--radius-md);
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  font-size:     0.875rem;
+}
+.widget-menu-btn {
+  background:    transparent;
+  border:        none;
+  color:         var(--color-text-tertiary);
+  cursor:        pointer;
+  padding:       var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size:     1.1rem;
+  transition:    color var(--duration-base), background var(--duration-base);
+}
+.widget-menu-btn:hover { color: var(--color-text-primary); background: var(--color-surface-2); }
+
+/* Chart canvas containers */
+.chart-container {
+  position: relative;
+  width:    100%;
+}
+.chart-container-sm  { height: 160px; }
+.chart-container-md  { height: 200px; }
+.chart-container-lg  { height: 240px; }
+
+/* ──────────────────────────────────────────────────────────────
+   AI INSIGHTS WIDGET (Glassmorphism)
+   ────────────────────────────────────────────────────────────── */
+.widget-ai {
+  background:      var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border:          1px solid var(--glass-border);
+  box-shadow:      var(--glass-glow), var(--shadow-lg);
+  position:        relative;
+  overflow:        hidden;
+}
+.widget-ai::before {
+  content:        '';
+  position:       absolute;
+  inset:          0;
+  background:     var(--mesh-gradient);
+  pointer-events: none;
+  z-index:        0;
+}
+.widget-ai > * { position: relative; z-index: 1; }
+
+.ai-insight-text {
+  font-size:   var(--text-base);
+  font-weight: var(--weight-medium);
+  color:       var(--color-text-primary);
+  line-height: var(--leading-relaxed);
+}
+.ai-insight-meta {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-2);
+  font-size:   var(--text-xs);
+  color:       var(--color-text-tertiary);
+}
+.ai-pulse {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  background:    var(--accent-500);
+  animation:     woc-pulse 2s ease-in-out infinite;
+  box-shadow:    0 0 8px var(--accent-500);
+}
+.ai-confidence-bar {
+  height:        4px;
+  background:    var(--color-surface-3);
+  border-radius: var(--radius-full);
+  overflow:      hidden;
+  margin-top:    var(--space-1);
+}
+.ai-confidence-fill {
+  height:     100%;
+  background: linear-gradient(90deg, var(--brand-500), var(--accent-500));
+  border-radius: var(--radius-full);
+  transition: width 1s var(--ease-out);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   BALANCE OVERVIEW WIDGET (Line Chart)
+   ────────────────────────────────────────────────────────────── */
+.balance-amount {
+  font-size:     var(--text-4xl);
+  font-weight:   var(--weight-extra);
+  color:         var(--color-text-primary);
+  letter-spacing:var(--tracking-tight);
+  line-height:   1;
+  font-family:   var(--font-mono);
+}
+.balance-change {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-1);
+  font-size:   var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+.balance-change.positive { color: var(--color-success); }
+.balance-change.negative { color: var(--color-danger);  }
+
+.period-tabs {
+  display:       flex;
+  gap:           var(--space-1);
+  background:    var(--color-surface-2);
+  border-radius: var(--radius-lg);
+  padding:       3px;
+}
+.period-tab {
+  padding:       var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size:     var(--text-xs);
+  font-weight:   var(--weight-medium);
+  color:         var(--color-text-tertiary);
+  cursor:        pointer;
+  border:        none;
+  background:    transparent;
+  transition:    all var(--duration-base);
+}
+.period-tab.active {
+  background:  var(--color-surface-1);
+  color:       var(--color-text-primary);
+  box-shadow:  var(--shadow-sm);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   EARNINGS WIDGET (Donut Chart)
+   ────────────────────────────────────────────────────────────── */
+.donut-center {
+  position:  absolute;
+  inset:     0;
+  display:   flex;
+  flex-direction: column;
+  align-items:    center;
+  justify-content:center;
+  pointer-events: none;
+}
+.donut-center-value {
+  font-size:   var(--text-2xl);
+  font-weight: var(--weight-extra);
+  color:       var(--color-text-primary);
+  line-height: 1;
+  font-family: var(--font-mono);
+}
+.donut-center-label {
+  font-size: var(--text-xs);
+  color:     var(--color-text-tertiary);
+  margin-top:var(--space-1);
+}
+
+.earnings-legend {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-2);
+}
+.legend-item {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-3);
+  font-size:   var(--text-sm);
+}
+.legend-dot {
+  width:         10px;
+  height:        10px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+.legend-label  { color: var(--color-text-secondary); flex: 1; }
+.legend-value  { font-weight: var(--weight-semi); color: var(--color-text-primary); font-family: var(--font-mono); }
+.legend-pct    { color: var(--color-text-tertiary); font-size: var(--text-xs); }
+
+/* ──────────────────────────────────────────────────────────────
+   TRANSACTIONS WIDGET (5-column list)
+   ────────────────────────────────────────────────────────────── */
+.tx-list {
+  display:       flex;
+  flex-direction:column;
+  gap:           0;
+  overflow-y:    auto;
+  max-height:    280px;
+}
+.tx-list::-webkit-scrollbar { width: 4px; }
+
+.tx-item {
+  display:       grid;
+  grid-template-columns: 36px 1fr 1fr 1fr 90px;
+  align-items:   center;
+  gap:           var(--space-3);
+  padding:       var(--space-3) var(--space-2);
+  border-radius: var(--radius-lg);
+  transition:    background var(--duration-fast);
+  cursor:        default;
+}
+.tx-item:hover { background: var(--color-surface-2); }
+.tx-item + .tx-item { border-top: 1px solid var(--color-border-subtle); }
+
+.tx-icon {
+  width:           36px;
+  height:          36px;
+  border-radius:   var(--radius-lg);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       1rem;
+  flex-shrink:     0;
+}
+.tx-icon.income  { background: var(--color-success-subtle); }
+.tx-icon.expense { background: var(--color-danger-subtle);  }
+.tx-icon.transfer{ background: var(--color-info-subtle);    }
+
+.tx-name    { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-text-primary); }
+.tx-cat     { font-size: var(--text-xs); color: var(--color-text-tertiary); }
+.tx-date    { font-size: var(--text-xs); color: var(--color-text-tertiary); }
+.tx-status  { justify-self: center; }
+.tx-amount  {
+  font-size:   var(--text-sm);
+  font-weight: var(--weight-semi);
+  font-family: var(--font-mono);
+  text-align:  right;
+}
+.tx-amount.positive { color: var(--color-success); }
+.tx-amount.negative { color: var(--color-danger);  }
+
+/* Tx table header */
+.tx-header {
+  display:       grid;
+  grid-template-columns: 36px 1fr 1fr 1fr 90px;
+  gap:           var(--space-3);
+  padding:       var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--space-1);
+}
+.tx-header span {
+  font-size:     var(--text-xs);
+  font-weight:   var(--weight-semi);
+  color:         var(--color-text-tertiary);
+  letter-spacing:var(--tracking-wider);
+  text-transform:uppercase;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SPENDING WIDGET (Vertical Bar Chart)
+   ────────────────────────────────────────────────────────────── */
+.spending-total {
+  font-size:   var(--text-2xl);
+  font-weight: var(--weight-extra);
+  color:       var(--color-text-primary);
+  font-family: var(--font-mono);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RESPONSIVE DASHBOARD
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .widget-transactions { grid-column: 1 / 3; }
+  .widget-spending     { grid-column: 1 / 3; }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+  .widget-transactions,
+  .widget-spending { grid-column: 1; }
+  .tx-item { grid-template-columns: 36px 1fr 90px; }
+  .tx-cat, .tx-date, .tx-status { display: none; }
+}

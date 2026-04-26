@@ -1,160 +1,92 @@
 // Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved.
 // Licensed under the Apache License, Version 2.0.
 
-async function renderLogin(container) {
-    container.innerHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow">
-                <h2 class="text-2xl font-semibold mb-4">Welcome back</h2>
-                <p class="text-gray-400 mb-6">Sign in with your account credentials.</p>
+/**
+ * Wings of Capital — Login View Logic
+ * Handles the tab switching and form submission for the login page.
+ */
 
-                <form id="login-form" class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-gray-300 mb-1">Email</label>
-                        <input
-                            id="login-email"
-                            type="email"
-                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
-                            placeholder="you@example.com"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-300 mb-1">Password</label>
-                        <input
-                            id="login-password"
-                            type="password"
-                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
-                            placeholder="Enter your password"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2"
-                    >
-                        Login
-                    </button>
-                </form>
-            </div>
+'use strict';
 
-            <div class="space-y-6">
-                <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow">
-                    <h2 class="text-2xl font-semibold mb-4">Create an account</h2>
-                    <form id="register-form" class="space-y-4">
-                        <div>
-                            <label class="block text-sm text-gray-300 mb-1">Email</label>
-                            <input
-                                id="register-email"
-                                type="email"
-                                class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
-                                placeholder="you@example.com"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-300 mb-1">Password</label>
-                            <input
-                                id="register-password"
-                                type="password"
-                                class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
-                                placeholder="At least 12 characters"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-300 mb-1">Confirm Password</label>
-                            <input
-                                id="register-password-confirm"
-                                type="password"
-                                class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            class="w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg px-4 py-2"
-                        >
-                            Register
-                        </button>
-                    </form>
-                </div>
+document.addEventListener('DOMContentLoaded', () => {
+  // ── Tab Switching ──────────────────────────────────────────────
 
-                <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow">
-                    <h2 class="text-2xl font-semibold mb-4">Use a dev token</h2>
-                    <p class="text-gray-400 mb-4">Paste a generated access token to skip email verification.</p>
-                    <form id="token-form" class="space-y-4">
-                        <div>
-                            <label class="block text-sm text-gray-300 mb-1">User ID (optional)</label>
-                            <input
-                                id="token-user-id"
-                                type="text"
-                                class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
-                                placeholder="UUID used in the token"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-300 mb-1">Email (optional)</label>
-                            <input
-                                id="token-email"
-                                type="email"
-                                class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
-                                placeholder="dev@example.com"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-300 mb-1">Access Token</label>
-                            <textarea
-                                id="token-value"
-                                class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 h-28"
-                                placeholder="Paste the JWT access token here"
-                                required
-                            ></textarea>
-                        </div>
-                        <button
-                            type="submit"
-                            class="w-full bg-purple-600 hover:bg-purple-700 rounded-lg px-4 py-2"
-                        >
-                            Use Token
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    `;
+  const tabLogin = document.getElementById('tab-login');
+  const tabReg   = document.getElementById('tab-register');
+  const formLogin= document.getElementById('form-login');
+  const formReg  = document.getElementById('form-register');
 
-    const loginForm = container.querySelector('#login-form');
-    const registerForm = container.querySelector('#register-form');
-    const tokenForm = container.querySelector('#token-form');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const email = container.querySelector('#login-email').value.trim();
-            const password = container.querySelector('#login-password').value;
-            await AuthManager.login(email, password);
-            window.location.hash = '#/dashboard';
-        });
+  function switchTab(isLogin) {
+    if (isLogin) {
+      tabLogin.style.borderBottom = '2px solid var(--color-primary)';
+      tabLogin.classList.replace('text-tertiary', 'text-primary');
+      tabLogin.classList.replace('font-medium', 'font-semi');
+      
+      tabReg.style.borderBottom = 'none';
+      tabReg.classList.replace('text-primary', 'text-tertiary');
+      tabReg.classList.replace('font-semi', 'font-medium');
+      
+      formLogin.classList.remove('d-none');
+      formReg.classList.add('d-none');
+    } else {
+      tabReg.style.borderBottom = '2px solid var(--color-primary)';
+      tabReg.classList.replace('text-tertiary', 'text-primary');
+      tabReg.classList.replace('font-medium', 'font-semi');
+      
+      tabLogin.style.borderBottom = 'none';
+      tabLogin.classList.replace('text-primary', 'text-tertiary');
+      tabLogin.classList.replace('font-semi', 'font-medium');
+      
+      formReg.classList.remove('d-none');
+      formLogin.classList.add('d-none');
     }
+  }
 
-    if (registerForm) {
-        registerForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const email = container.querySelector('#register-email').value.trim();
-            const password = container.querySelector('#register-password').value;
-            const passwordConfirm = container.querySelector('#register-password-confirm').value;
-            await AuthManager.register(email, password, passwordConfirm);
-        });
-    }
+  tabLogin.addEventListener('click', () => switchTab(true));
+  tabReg.addEventListener('click', () => switchTab(false));
 
-    if (tokenForm) {
-        tokenForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const token = container.querySelector('#token-value').value.trim();
-            const userId = container.querySelector('#token-user-id').value.trim();
-            const email = container.querySelector('#token-email').value.trim();
-            AuthManager.useToken(token, userId || 'dev-user', email || 'dev@local');
-            window.location.hash = '#/dashboard';
-        });
+  // ── Password Visibility Toggle ─────────────────────────────────
+
+  document.querySelectorAll('.pwd-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      const targetId = e.target.dataset.target;
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        e.target.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        e.target.textContent = '👁️';
+      }
+    });
+  });
+
+  // ── Form Initialization ────────────────────────────────────────
+
+  new WocForm('#form-login', {
+    onSubmit: async (data) => {
+      await AuthManager.login(data.email, data.password);
+    },
+    onSuccess: () => {
+      window.location.href = '/dashboard.html';
     }
-}
+  });
+
+  new WocForm('#form-register', {
+    onSubmit: async (data) => {
+      await AuthManager.register(data.email, data.password, data.passwordConfirm);
+    },
+    onSuccess: () => {
+      // Switch back to login tab on success
+      switchTab(true);
+      document.getElementById('form-register').reset();
+    }
+  });
+
+  // ── Auto-redirect if already logged in ─────────────────────────
+  if (AuthManager.isAuthenticated()) {
+    window.location.replace('/dashboard.html');
+  }
+});

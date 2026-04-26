@@ -1,0 +1,221 @@
+<!-- Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved. -->
+<!-- Licensed under the Apache License, Version 2.0. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Wings of Capital - Trading">
+  <meta name="theme-color" content="#111827">
+
+  <title>Trading - Wings of Capital</title>
+
+  <script src="/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="/css/design-system.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  
+  <!-- Trading specific styles -->
+  <style>
+    .trading-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: var(--space-6);
+      align-items: start;
+    }
+    
+    .order-book {
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+    }
+    .ob-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: var(--space-1) 0;
+      position: relative;
+    }
+    .ob-row::before {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; right: 0;
+      background: var(--color-danger-subtle);
+      width: var(--depth-pct, 0%);
+      opacity: 0.3;
+      z-index: 0;
+    }
+    .ob-row.bid::before { background: var(--color-success-subtle); left: 0; right: auto; }
+    .ob-row > * { position: relative; z-index: 1; }
+    .ob-price { color: var(--color-danger); }
+    .ob-row.bid .ob-price { color: var(--color-success); }
+    .ob-amount { text-align: right; }
+    .ob-total { text-align: right; color: var(--color-text-tertiary); }
+    
+    @media (max-width: 1024px) {
+      .trading-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="app-shell">
+
+  <!-- Sidebar injected by JS -->
+  <aside class="app-sidebar"></aside>
+
+  <main class="app-main">
+    
+    <!-- Action Bar -->
+    <header class="action-bar z-sticky">
+      <div class="action-bar-left">
+        <h2 class="text-xl font-bold d-flex items-center gap-2">
+          BTC/USD <span class="text-success text-sm ml-2">+2.4%</span>
+        </h2>
+        <span class="text-2xl font-mono ml-4" id="ticker-price">--</span>
+      </div>
+      <div class="action-bar-right">
+        <select id="market-select" class="form-select bg-surface-2 border-none">
+          <option value="BTC-USD">BTC/USD</option>
+          <option value="ETH-USD">ETH/USD</option>
+          <option value="SOL-USD">SOL/USD</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="trading-grid">
+        
+        <!-- Left Column: Chart & Open Orders -->
+        <div class="d-flex flex-col gap-6">
+          
+          <!-- Main Chart -->
+          <div class="card p-0 overflow-hidden">
+            <div class="d-flex items-center justify-between p-4 border-bottom border-subtle">
+              <div class="period-tabs">
+                <button class="period-tab" data-period="15m">15m</button>
+                <button class="period-tab" data-period="1h">1h</button>
+                <button class="period-tab" data-period="4h">4h</button>
+                <button class="period-tab active" data-period="1D">1D</button>
+              </div>
+              <div class="d-flex gap-2">
+                 <button class="btn btn-ghost btn-sm" aria-label="Chart Settings">⚙️</button>
+                 <button class="btn btn-ghost btn-sm" aria-label="Fullscreen">⛶</button>
+              </div>
+            </div>
+            <div class="chart-container" style="height: 400px; padding: var(--space-4);">
+              <canvas id="tradingChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Open Orders -->
+          <div class="card">
+            <div class="card-header mb-4">
+              <h3 class="card-title">Open Orders</h3>
+            </div>
+            <div id="orders-table-container">
+               <div class="text-center p-6 text-tertiary skeleton" style="min-height: 200px;">Loading orders...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Order Entry & Orderbook -->
+        <div class="d-flex flex-col gap-6">
+          
+          <!-- Order Entry -->
+          <div class="card">
+            <div class="d-flex border-bottom border-subtle mb-4">
+              <button id="tab-buy" class="flex-1 py-2 text-sm font-semi text-success" style="border-bottom: 2px solid var(--color-success);">Buy</button>
+              <button id="tab-sell" class="flex-1 py-2 text-sm font-medium text-tertiary hover:text-danger transition-base">Sell</button>
+            </div>
+
+            <div class="d-flex gap-2 mb-4">
+              <button class="btn btn-secondary btn-sm flex-1 active">Limit</button>
+              <button class="btn btn-ghost btn-sm flex-1">Market</button>
+              <button class="btn btn-ghost btn-sm flex-1">Stop</button>
+            </div>
+
+            <form id="order-form" novalidate>
+              <div class="form-group">
+                <div class="d-flex justify-between items-center mb-1">
+                  <label class="form-label m-0 text-xs text-tertiary uppercase">Price</label>
+                  <span class="text-xs text-tertiary">USD</span>
+                </div>
+                <input type="number" id="order-price" step="0.01" value="65400.00" class="font-mono bg-surface-2 text-right">
+              </div>
+
+              <div class="form-group">
+                <div class="d-flex justify-between items-center mb-1">
+                  <label class="form-label m-0 text-xs text-tertiary uppercase">Amount</label>
+                  <span class="text-xs text-tertiary">BTC</span>
+                </div>
+                <input type="number" id="order-amount" step="0.0001" placeholder="0.00" class="font-mono bg-surface-2 text-right">
+              </div>
+              
+              <div class="d-flex justify-between items-center mb-4 text-sm font-semi pt-2 border-top border-subtle">
+                <span class="text-tertiary">Total</span>
+                <span class="font-mono" id="order-total">$0.00</span>
+              </div>
+
+              <button type="submit" id="submit-order-btn" class="btn btn-success btn-block btn-lg mt-2">Buy BTC</button>
+            </form>
+          </div>
+
+          <!-- Order Book (Simplified) -->
+          <div class="card">
+            <div class="card-header mb-2 pb-2">
+              <h3 class="card-title text-xs">Order Book</h3>
+            </div>
+            <div class="order-book">
+              <div class="d-flex justify-between text-xs text-tertiary mb-2 uppercase tracking-wider">
+                <span>Price(USD)</span>
+                <span>Amount(BTC)</span>
+                <span>Total</span>
+              </div>
+              
+              <div id="ob-asks" class="d-flex flex-col-reverse mb-2">
+                <!-- Asks injected here -->
+              </div>
+              
+              <div class="text-center font-bold text-lg border-top border-bottom border-subtle py-2 my-2" id="ob-spread">
+                65,400.00
+              </div>
+              
+              <div id="ob-bids" class="d-flex flex-col">
+                <!-- Bids injected here -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <!-- Core Scripts -->
+  <script src="/js/state.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils/formatters.js"></script>
+  <script src="/js/utils/chart-helpers.js"></script>
+  
+  <!-- Components -->
+  <script src="/js/components/sidebar.js"></script>
+  <script src="/js/components/charts.js"></script>
+  <script src="/js/components/table.js"></script>
+  <script src="/js/components/form.js"></script>
+  
+  <!-- View Logic -->
+  <script src="/js/views/trading.js"></script>
+
+</body>
+</html>

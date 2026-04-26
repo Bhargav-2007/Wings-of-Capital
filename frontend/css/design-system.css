@@ -1,0 +1,297 @@
+/* ============================================================
+   Wings of Capital — Design System
+   CSS Custom Properties: Tokens, Themes, Typography, Spacing
+   Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved.
+   Licensed under the Apache License, Version 2.0.
+   ============================================================ */
+
+/* ──────────────────────────────────────────────────────────────
+   GOOGLE FONTS
+   ────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ──────────────────────────────────────────────────────────────
+   ROOT — LIGHT THEME (DEFAULT)
+   All tokens defined here; dark theme overrides below.
+   ────────────────────────────────────────────────────────────── */
+:root {
+  /* ── Brand Palette (HSL) ── */
+  --hue-brand:       230;
+  --hue-accent:      162;
+  --hue-danger:        4;
+  --hue-warning:      38;
+
+  /* ── Brand Blue ── */
+  --brand-50:        hsl(var(--hue-brand), 100%, 97%);
+  --brand-100:       hsl(var(--hue-brand),  96%, 92%);
+  --brand-200:       hsl(var(--hue-brand),  94%, 84%);
+  --brand-300:       hsl(var(--hue-brand),  90%, 72%);
+  --brand-400:       hsl(var(--hue-brand),  86%, 60%);
+  --brand-500:       hsl(var(--hue-brand),  82%, 51%);
+  --brand-600:       hsl(var(--hue-brand),  76%, 43%);
+  --brand-700:       hsl(var(--hue-brand),  72%, 36%);
+  --brand-800:       hsl(var(--hue-brand),  68%, 28%);
+  --brand-900:       hsl(var(--hue-brand),  64%, 20%);
+
+  /* ── Accent Emerald (Gains / Positive) ── */
+  --accent-50:       hsl(var(--hue-accent), 80%, 96%);
+  --accent-400:      hsl(var(--hue-accent), 70%, 52%);
+  --accent-500:      hsl(var(--hue-accent), 68%, 42%);
+  --accent-600:      hsl(var(--hue-accent), 66%, 34%);
+
+  /* ── Danger Rose (Losses / Negative) ── */
+  --danger-400:      hsl(var(--hue-danger), 88%, 62%);
+  --danger-500:      hsl(var(--hue-danger), 86%, 52%);
+  --danger-600:      hsl(var(--hue-danger), 84%, 42%);
+
+  /* ── Warning Amber ── */
+  --warning-400:     hsl(var(--hue-warning), 96%, 60%);
+  --warning-500:     hsl(var(--hue-warning), 92%, 50%);
+
+  /* ── Info Cyan ── */
+  --info-400:        hsl(199, 89%, 52%);
+  --info-500:        hsl(199, 85%, 42%);
+
+  /* ── Semantic UI Tokens (LIGHT) ── */
+  --color-bg-base:        hsl(220, 16%, 96%);
+  --color-bg-elevated:    hsl(0, 0%, 100%);
+  --color-bg-sunken:      hsl(220, 14%, 92%);
+  --color-bg-overlay:     hsl(220, 16%, 96%);
+
+  --color-sidebar-bg:     hsl(228, 20%, 14%);
+  --color-sidebar-text:   hsl(220, 15%, 75%);
+  --color-sidebar-active: hsl(220, 15%, 100%);
+  --color-sidebar-pill:   hsla(230, 82%, 51%, 0.20);
+  --color-sidebar-border: hsla(228, 20%, 30%, 0.5);
+
+  --color-surface-1:      hsl(0, 0%, 100%);
+  --color-surface-2:      hsl(220, 14%, 96%);
+  --color-surface-3:      hsl(220, 12%, 90%);
+
+  --color-text-primary:   hsl(222, 20%, 12%);
+  --color-text-secondary: hsl(222, 12%, 40%);
+  --color-text-tertiary:  hsl(222, 10%, 60%);
+  --color-text-disabled:  hsl(222, 8%, 78%);
+  --color-text-inverse:   hsl(0, 0%, 100%);
+
+  --color-border:         hsl(220, 14%, 88%);
+  --color-border-subtle:  hsl(220, 12%, 93%);
+  --color-border-strong:  hsl(220, 16%, 72%);
+
+  --color-primary:        var(--brand-500);
+  --color-primary-hover:  var(--brand-600);
+  --color-primary-active: var(--brand-700);
+  --color-primary-subtle: var(--brand-100);
+
+  --color-success:        var(--accent-500);
+  --color-success-subtle: var(--accent-50);
+  --color-danger:         var(--danger-500);
+  --color-danger-subtle:  hsl(var(--hue-danger), 86%, 96%);
+  --color-warning:        var(--warning-500);
+  --color-warning-subtle: hsl(var(--hue-warning), 92%, 94%);
+  --color-info:           var(--info-500);
+  --color-info-subtle:    hsl(199, 85%, 94%);
+
+  /* ── Glassmorphism ── */
+  --glass-bg:             hsla(220, 30%, 98%, 0.55);
+  --glass-border:         hsla(220, 30%, 100%, 0.30);
+  --glass-blur:           12px;
+  --glass-glow:           0 0 60px hsla(230, 82%, 51%, 0.15),
+                          0 0 120px hsla(230, 82%, 51%, 0.08);
+
+  /* ── AI Glow Mesh ── */
+  --mesh-gradient:
+    radial-gradient(ellipse at 20% 30%, hsla(230, 82%, 60%, 0.25) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, hsla(162, 68%, 50%, 0.20) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, hsla(270, 60%, 55%, 0.15) 0%, transparent 65%);
+
+  /* ── Chart Colors ── */
+  --chart-1:  hsl(230, 82%, 62%);
+  --chart-2:  hsl(162, 68%, 48%);
+  --chart-3:  hsl(38,  92%, 58%);
+  --chart-4:  hsl(270, 65%, 60%);
+  --chart-5:  hsl(4,   86%, 60%);
+  --chart-6:  hsl(199, 85%, 55%);
+
+  /* ── Typography ── */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  --text-xs:    0.6875rem;   /* 11px */
+  --text-sm:    0.8125rem;   /* 13px */
+  --text-base:  0.9375rem;   /* 15px */
+  --text-md:    1.0625rem;   /* 17px */
+  --text-lg:    1.1875rem;   /* 19px */
+  --text-xl:    1.375rem;    /* 22px */
+  --text-2xl:   1.625rem;    /* 26px */
+  --text-3xl:   2rem;        /* 32px */
+  --text-4xl:   2.5rem;      /* 40px */
+  --text-5xl:   3.25rem;     /* 52px */
+
+  --leading-tight:  1.2;
+  --leading-snug:   1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.7;
+
+  --tracking-tight:  -0.04em;
+  --tracking-snug:   -0.02em;
+  --tracking-normal:  0em;
+  --tracking-wide:    0.04em;
+  --tracking-wider:   0.08em;
+
+  --weight-light:   300;
+  --weight-normal:  400;
+  --weight-medium:  500;
+  --weight-semi:    600;
+  --weight-bold:    700;
+  --weight-extra:   800;
+  --weight-black:   900;
+
+  /* ── Spacing Scale (4px base) ── */
+  --space-px:   1px;
+  --space-0:    0rem;
+  --space-1:    0.25rem;   /* 4px  */
+  --space-2:    0.5rem;    /* 8px  */
+  --space-3:    0.75rem;   /* 12px */
+  --space-4:    1rem;      /* 16px */
+  --space-5:    1.25rem;   /* 20px */
+  --space-6:    1.5rem;    /* 24px */
+  --space-7:    1.75rem;   /* 28px */
+  --space-8:    2rem;      /* 32px */
+  --space-10:   2.5rem;    /* 40px */
+  --space-12:   3rem;      /* 48px */
+  --space-14:   3.5rem;    /* 56px */
+  --space-16:   4rem;      /* 64px */
+  --space-20:   5rem;      /* 80px */
+  --space-24:   6rem;      /* 96px */
+  --space-32:   8rem;      /* 128px */
+
+  /* ── Border Radius ── */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-3xl:  28px;
+  --radius-full: 9999px;
+
+  /* ── Shadows (Light) ── */
+  --shadow-xs:  0 1px 2px hsla(222, 30%, 8%, 0.04);
+  --shadow-sm:  0 1px 3px hsla(222, 30%, 8%, 0.08),
+                0 1px 2px hsla(222, 30%, 8%, 0.04);
+  --shadow-md:  0 4px 6px  hsla(222, 30%, 8%, 0.06),
+                0 2px 4px  hsla(222, 30%, 8%, 0.04);
+  --shadow-lg:  0 10px 15px hsla(222, 30%, 8%, 0.08),
+                0  4px  6px  hsla(222, 30%, 8%, 0.04);
+  --shadow-xl:  0 20px 25px hsla(222, 30%, 8%, 0.10),
+                0  8px 10px  hsla(222, 30%, 8%, 0.04);
+  --shadow-2xl: 0 25px 50px hsla(222, 30%, 8%, 0.18);
+
+  --shadow-brand:   0 0 0 3px hsla(230, 82%, 51%, 0.20);
+  --shadow-danger:  0 0 0 3px hsla(4,   86%, 52%, 0.20);
+  --shadow-success: 0 0 0 3px hsla(162, 68%, 42%, 0.20);
+
+  /* ── Z-Index Scale ── */
+  --z-below:    -1;
+  --z-base:      0;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-toast:    500;
+  --z-tooltip:  600;
+
+  /* ── Transitions ── */
+  --duration-fast:    100ms;
+  --duration-base:    200ms;
+  --duration-slow:    300ms;
+  --duration-slower:  500ms;
+  --ease-default:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:          cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:         cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out:      cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring:      cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* ── Layout ── */
+  --sidebar-width:      280px;
+  --sidebar-width-collapsed: 72px;
+  --topbar-height:      64px;
+  --content-max-width:  1440px;
+  --widget-gap:         1.5rem;
+
+  /* ── Dashboard Grid ── */
+  --grid-cols:          3;
+  --grid-gap:           var(--widget-gap);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   DARK THEME  (.dark on <html>)
+   Only tokens that differ from light theme are redefined.
+   ────────────────────────────────────────────────────────────── */
+html.dark {
+  /* ── Semantic UI Tokens (DARK) ── */
+  --color-bg-base:        hsl(222, 24%, 8%);
+  --color-bg-elevated:    hsl(224, 22%, 11%);
+  --color-bg-sunken:      hsl(222, 26%, 6%);
+  --color-bg-overlay:     hsl(222, 24%, 8%);
+
+  --color-sidebar-bg:     hsl(224, 22%, 9%);
+  --color-sidebar-text:   hsl(220, 15%, 60%);
+  --color-sidebar-active: hsl(220, 15%, 96%);
+  --color-sidebar-pill:   hsla(230, 82%, 51%, 0.18);
+  --color-sidebar-border: hsla(228, 20%, 20%, 0.8);
+
+  --color-surface-1:      hsl(224, 22%, 12%);
+  --color-surface-2:      hsl(224, 20%, 15%);
+  --color-surface-3:      hsl(224, 18%, 20%);
+
+  --color-text-primary:   hsl(220, 20%, 94%);
+  --color-text-secondary: hsl(220, 14%, 68%);
+  --color-text-tertiary:  hsl(220, 10%, 50%);
+  --color-text-disabled:  hsl(220, 8%, 36%);
+  --color-text-inverse:   hsl(222, 24%, 8%);
+
+  --color-border:         hsl(224, 18%, 20%);
+  --color-border-subtle:  hsl(224, 16%, 15%);
+  --color-border-strong:  hsl(224, 20%, 30%);
+
+  --color-primary-subtle: hsla(230, 82%, 51%, 0.15);
+  --color-success-subtle: hsla(162, 68%, 42%, 0.12);
+  --color-danger-subtle:  hsla(4,   86%, 52%, 0.12);
+  --color-warning-subtle: hsla(38,  92%, 50%, 0.12);
+  --color-info-subtle:    hsla(199, 85%, 42%, 0.12);
+
+  /* ── Glassmorphism (Dark) ── */
+  --glass-bg:    hsla(224, 30%, 14%, 0.60);
+  --glass-border:hsla(220, 30%, 60%, 0.10);
+  --glass-blur:  16px;
+  --glass-glow:  0 0 60px  hsla(230, 82%, 51%, 0.20),
+                 0 0 120px hsla(162, 68%, 50%, 0.12);
+
+  /* ── Shadows (Dark — more saturated) ── */
+  --shadow-xs:  0 1px 2px hsla(222, 60%, 2%, 0.40);
+  --shadow-sm:  0 1px 3px hsla(222, 60%, 2%, 0.50),
+                0 1px 2px hsla(222, 60%, 2%, 0.30);
+  --shadow-md:  0 4px 6px  hsla(222, 60%, 2%, 0.40),
+                0 2px 4px  hsla(222, 60%, 2%, 0.25);
+  --shadow-lg:  0 10px 15px hsla(222, 60%, 2%, 0.50),
+                0  4px  6px  hsla(222, 60%, 2%, 0.30);
+  --shadow-xl:  0 20px 25px hsla(222, 60%, 2%, 0.55),
+                0  8px 10px  hsla(222, 60%, 2%, 0.35);
+  --shadow-2xl: 0 25px 50px hsla(222, 60%, 2%, 0.70);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOTION PREFERENCE
+   Disable all transitions for users who prefer reduced motion.
+   ────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast:   0ms;
+    --duration-base:   0ms;
+    --duration-slow:   0ms;
+    --duration-slower: 0ms;
+  }
+}

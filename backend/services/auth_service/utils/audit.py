@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import Optional
 
 from fastapi import Request
@@ -13,7 +14,7 @@ from sqlalchemy.orm import Session
 from auth_service.models.audit import AuthAuditLog
 
 
-def record_audit_log(db: Session, user_id: str, action: str, request: Optional[Request]) -> None:
+def record_audit_log(db: Session, user_id: uuid.UUID, action: str, request: Optional[Request]) -> None:
     ip_address = request.client.host if request and request.client else None
     user_agent = request.headers.get("User-Agent") if request else None
 

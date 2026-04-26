@@ -59,7 +59,7 @@ def _session_expiry() -> dt.datetime:
 
 def _record_login(db: Session, user: User, request: Optional[Request]) -> None:
     user.last_login_at = dt.datetime.now(dt.timezone.utc)
-    record_audit_log(db, str(user.id), "login", request)
+    record_audit_log(db, user.id, "login", request)
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
@@ -97,7 +97,7 @@ def register(payload: RegisterRequest, request: Request, db: Session = Depends(g
         ),
     )
 
-    record_audit_log(db, str(user.id), "register", request)
+    record_audit_log(db, user.id, "register", request)
     db.commit()
     db.refresh(user)
 
@@ -232,7 +232,7 @@ def logout(request: Request, user: User = Depends(get_current_user), db: Session
     for session in sessions:
         session.revoked_at = now
 
-    record_audit_log(db, str(user.id), "logout", request)
+    record_audit_log(db, user.id, "logout", request)
     db.commit()
 
     return LogoutResponse(message="Logged out")

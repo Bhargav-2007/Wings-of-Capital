@@ -34,8 +34,10 @@ class UserBase(BaseSchema):
     email: EmailStr
 
 
+import uuid
+
 class UserOut(UserBase):
-    id: str
+    id: uuid.UUID
     is_active: bool
     is_verified: bool
     mfa_enabled: bool
