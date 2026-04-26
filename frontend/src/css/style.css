@@ -1,0 +1,516 @@
+/* Wings of Capital - Modern Fintech Dashboard CSS */
+:root {
+  --color-bg: #f8fafc;
+  --color-bg-card: #fff;
+  --color-bg-glass: rgba(255,255,255,0.7);
+  --color-bg-sidebar: #fff;
+  --color-bg-sidebar-promo: linear-gradient(135deg, #6366f1 0%, #60a5fa 100%);
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-primary: #6366f1;
+  --color-primary-dark: #312e81;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-border: #e2e8f0;
+  --color-pill-bg: #e0e7ff;
+  --color-pill-text: #6366f1;
+  --color-pill-bg-alt: #f1f5f9;
+  --color-pill-text-alt: #334155;
+  --shadow-glass: 0 8px 32px 0 rgba(31,38,135,0.13);
+}
+
+html.dark {
+  --color-bg: #0f172a;
+  --color-bg-card: #1e293b;
+  --color-bg-glass: rgba(30,41,59,0.7);
+  --color-bg-sidebar: #1e293b;
+  --color-bg-sidebar-promo: linear-gradient(135deg, #6366f1 0%, #312e81 100%);
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-primary: #6366f1;
+  --color-primary-dark: #6366f1;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-border: #334155;
+  --color-pill-bg: #312e81;
+  --color-pill-text: #a5b4fc;
+  --color-pill-bg-alt: #1e293b;
+  --color-pill-text-alt: #f1f5f9;
+  --shadow-glass: 0 8px 32px 0 rgba(31,38,135,0.37);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', Arial, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.sidebar {
+  width: 270px;
+  background: var(--color-bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--color-border);
+  box-shadow: 2px 0 8px 0 rgba(31,38,135,0.03);
+  z-index: 2;
+}
+
+.sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px 16px 24px;
+}
+
+.sidebar .brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #60a5fa 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: var(--shadow-glass);
+}
+
+.sidebar .brand-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+}
+
+.sidebar .user-card {
+  background: var(--color-bg-card);
+  margin: 0 16px 24px 16px;
+  padding: 20px 18px 18px 18px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar .user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar .user-date {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.sidebar .theme-toggle {
+  margin-left: 8px;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--color-pill-bg-alt);
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+  font-size: 1.1rem;
+  transition: background 0.2s;
+}
+
+.sidebar .theme-toggle:hover {
+  background: var(--color-pill-bg);
+}
+
+.sidebar .user-greeting {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--color-text);
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar nav a.active {
+  background: var(--color-pill-bg);
+  color: var(--color-pill-text);
+  font-weight: 700;
+}
+
+.sidebar nav a:hover {
+  background: var(--color-pill-bg-alt);
+  color: var(--color-pill-text-alt);
+}
+
+.sidebar .promo {
+  margin: 24px 16px 32px 16px;
+  padding: 20px 18px;
+  border-radius: 18px;
+  background: var(--color-bg-sidebar-promo);
+  color: #fff;
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar .promo-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.sidebar .promo-desc {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.sidebar .promo-btn {
+  margin-top: 10px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-primary);
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px 0 rgba(99,102,241,0.08);
+  transition: background 0.2s;
+}
+
+.sidebar .promo-btn:hover {
+  background: #e0e7ff;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--color-bg);
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar .dropdown {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--color-pill-bg-alt);
+  color: var(--color-text);
+  border: none;
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px 0 rgba(31,38,135,0.03);
+  transition: background 0.2s;
+}
+
+.topbar .dropdown:hover {
+  background: var(--color-pill-bg);
+}
+
+.topbar .actions {
+  display: flex;
+  gap: 10px;
+}
+
+.topbar .ghost-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.topbar .ghost-btn:hover {
+  background: var(--color-pill-bg);
+  color: var(--color-pill-text);
+}
+
+.topbar .primary-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px 0 rgba(99,102,241,0.08);
+  transition: background 0.2s;
+}
+
+.topbar .primary-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  grid-auto-rows: minmax(180px, auto);
+}
+
+@media (max-width: 1100px) {
+  .widget-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.widget {
+  background: var(--color-bg-card);
+  border-radius: 18px;
+  box-shadow: var(--shadow-glass);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  position: relative;
+}
+
+.widget.ai {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.widget.ai::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at 60% 40%, #6366f1 0%, #a5b4fc 40%, transparent 70%);
+  opacity: 0.7;
+}
+
+.widget .widget-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--color-text);
+  z-index: 1;
+}
+
+.widget .widget-value {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: var(--color-text);
+  z-index: 1;
+}
+
+.widget .widget-indicator {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--color-success);
+  z-index: 1;
+}
+
+.widget .widget-indicator.negative {
+  color: var(--color-danger);
+}
+
+.widget .widget-pills {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  z-index: 1;
+}
+
+.widget .pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-pill-bg);
+  color: var(--color-pill-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.widget .pill.alt {
+  background: var(--color-pill-bg-alt);
+  color: var(--color-pill-text-alt);
+}
+
+.widget .widget-action {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-pill-bg);
+  color: var(--color-pill-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px 0 rgba(99,102,241,0.08);
+  cursor: pointer;
+  z-index: 2;
+  border: none;
+  transition: background 0.2s;
+}
+
+.widget .widget-action:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.widget.balance .chart-canvas {
+  width: 100%;
+  height: 120px;
+}
+
+.widget.earnings .chart-canvas {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.widget.earnings .legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.widget.earnings .legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.widget.earnings .legend-dot.current {
+  background: var(--color-primary);
+}
+
+.widget.earnings .legend-dot.goal {
+  background: #e5e7eb;
+}
+
+.widget.transactions {
+  grid-column: span 2;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.widget.transactions table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.98rem;
+}
+
+.widget.transactions th, .widget.transactions td {
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.widget.transactions th {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  border-bottom: 1.5px solid var(--color-border);
+}
+
+.widget.transactions td {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.widget.transactions .amount.positive {
+  color: var(--color-success);
+  font-weight: bold;
+}
+
+.widget.transactions .amount.negative {
+  color: var(--color-text);
+  font-weight: bold;
+}
+
+.widget.spending {
+  grid-column: span 1;
+}
+
+.widget.spending .chart-canvas {
+  width: 100%;
+  height: 120px;
+}
+
+@media (max-width: 900px) {
+  #app {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100vw;
+    flex-direction: row;
+    height: 70px;
+    min-width: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 2px 8px 0 rgba(31,38,135,0.03);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+  }
+  .main {
+    padding: 100px 8px 8px 8px;
+  }
+  .widget-grid {
+    grid-template-columns: 1fr;
+  }
+  .widget.transactions, .widget.spending {
+    grid-column: span 1;
+  }
+}

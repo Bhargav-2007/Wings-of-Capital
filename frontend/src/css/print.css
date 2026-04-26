@@ -1,0 +1,18 @@
+/* Print styles for tax/transaction reports */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .sidebar, .topbar, .promo, .widget-action {
+    display: none !important;
+  }
+  .main {
+    padding: 0 !important;
+  }
+  .widget, .widget-grid, .transactions, .spending {
+    box-shadow: none !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

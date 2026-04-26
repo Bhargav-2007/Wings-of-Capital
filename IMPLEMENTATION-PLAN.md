@@ -2,6 +2,21 @@
 
 ## Wings of Capital: 5-Phase SSDLC (Secure Software Development Lifecycle)
 
+### SecDevOps & Production Readiness Checklist (Frontend)
+
+- [x] No XSS: All user/API data sanitized before rendering
+- [x] No CSRF: JWT tokens only, no cookies, CORS enforced
+- [x] No `dangerouslySetInnerHTML`, `eval`, or unsanitized HTML
+- [x] No secrets/credentials in repo
+- [x] Service workers only in production
+- [x] All dependencies audited (`npm audit`)
+- [x] HTTP allowed for local/dev, HTTPS required for prod
+- [x] No open CORS or credential leaks
+- [x] All API calls use Accept/Content-Type headers
+- [x] All navigation uses React Router or safe `<button>`
+
+See README.md for more details.
+
 **Overall Duration:** 10 weeks | **Target Launch:** Week 10 (Production-Ready Alpha)
 
 This document details the complete development roadmap with strictly numbered, granular sub-tasks, dependencies, effort estimates, and success criteria.

@@ -35,6 +35,22 @@ Wings of Capital is a **production-grade, modular, open-source fintech ecosystem
 
 ---
 
+## SecDevOps & Security Practices
+
+- All frontend code is reviewed for XSS, CSRF, and token handling vulnerabilities.
+- No use of `dangerouslySetInnerHTML`, `eval`, or unsanitized user input.
+- JWT tokens are stored in memory/localStorage (never in cookies).
+- All API calls use HTTPS in production; for local/dev, HTTP is allowed.
+- Service workers are registered only in production.
+- All dependencies are regularly audited (`npm audit`).
+- No secrets or credentials are ever committed to the repo.
+- All user input and API data is sanitized before rendering.
+- See `IMPLEMENTATION-PLAN.md` for SSDLC and security phase details.
+
+**Note:** This project follows SecDevOps best practices, but does not require a custom domain or HTTPS for local development.
+
+---
+
 ## 🏗️ System Architecture
 
 ```mermaid

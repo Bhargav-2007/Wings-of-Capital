@@ -1,0 +1,4 @@
+Contact: mailto:support@wingsofcapital.io
+Expires: 2027-12-31T23:59:59.000Z
+Acknowledgements: https://wingsofcapital.io/security
+Policy: https://wingsofcapital.io/security-policy
