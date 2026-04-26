@@ -18,17 +18,21 @@ _settings = get_settings()
 
 
 def _create_engine(database_url: str) -> Engine:
-    if database_url.startswith("sqlite"):
-        return create_engine(
-            database_url,
-            connect_args={"check_same_thread": False},
-            poolclass=None,
-        )
+    # SQLite uses a different pooling implementation that does not accept
+    # queue/connection pool parameters like `max_overflow` or `pool_size`.
+    # Detect SQLite URLs and adjust engine creation accordingly.
+    engine_kwargs = {"pool_pre_ping": True}
+    if database_url.startswith("sqlite://"):
+        # For SQLite, disable same-thread check when using in-memory or file DBs
+        connect_args = {"check_same_thread": False}
+        return create_engine(database_url, connect_args=connect_args, **engine_kwargs)
+
+    # For other databases (Postgres, MySQL, etc.) pass pooling options
     return create_engine(
         database_url,
         pool_size=_settings.database_pool_size,
         max_overflow=_settings.database_max_overflow,
-        pool_pre_ping=True,
+        **engine_kwargs,
     )
 
 

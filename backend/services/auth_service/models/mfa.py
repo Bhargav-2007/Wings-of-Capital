@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from sqlalchemy import Boolean, ForeignKey, JSON, String
-from sqlalchemy.dialects.postgresql import UUID
+from shared.db_types import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.models import BaseModel

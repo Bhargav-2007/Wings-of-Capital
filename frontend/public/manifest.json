@@ -1,0 +1,16 @@
+{
+  "name": "Wings of Capital",
+  "short_name": "WingsCapital",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#6366f1",
+  "description": "A modern Web3/Fintech dashboard.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48 64x64 128x128 256x256",
+      "type": "image/x-icon"
+    }
+  ]
+}

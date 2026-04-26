@@ -18,6 +18,7 @@ from crypto_service.routes import (
     prices_router,
     reports_router,
     tasks_router,
+    fx_router,
 )
 from shared.config import get_settings
 from shared.database import ENGINE, TIMESCALE_ENGINE, health_check as db_health_check
@@ -61,6 +62,7 @@ app.include_router(ai_router)
 app.include_router(ai_models_router)
 app.include_router(reports_router)
 app.include_router(tasks_router)
+app.include_router(fx_router)
 
 
 def _redis_health() -> bool:

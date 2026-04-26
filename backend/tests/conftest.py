@@ -1,3 +1,142 @@
+import os
+import sys
+import pytest
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+# Ensure test environment variables are set before importing application code
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
+os.environ.setdefault("BCRYPT_ROUNDS", "4")
+os.environ.setdefault("PASSWORD_MIN_LENGTH", "1")
+
+# Make the `services` directory importable (so packages like `auth_service` resolve)
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SERVICES_PATH = os.path.join(REPO_ROOT, "services")
+if SERVICES_PATH not in sys.path:
+    sys.path.insert(0, SERVICES_PATH)
+
+# Use an in-memory SQLite engine that persists across connections for tests
+ENGINE = create_engine(
+    "sqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+
+TestingSessionLocal = sessionmaker(bind=ENGINE, autocommit=False, autoflush=False, expire_on_commit=False)
+
+# Patch shared.database to use the in-memory engine/session for tests
+import shared.database as _database  # type: ignore
+_database.ENGINE = ENGINE
+_database.SessionLocal = TestingSessionLocal
+
+# Provide a small fake Redis client so rate-limiting and pub/sub do not require a running Redis
+import shared.redis as _redis  # type: ignore
+
+
+class _FakeRedis:
+    def __init__(self):
+        self._store = {}
+
+    def get(self, key):
+        return self._store.get(key)
+
+    def set(self, name, value, ex=None):
+        self._store[name] = value
+        return True
+
+    def delete(self, key):
+        return int(self._store.pop(key, None) is not None)
+
+    def incr(self, key):
+        self._store[key] = int(self._store.get(key, 0)) + 1
+        return self._store[key]
+
+    def expire(self, key, seconds):
+        return True
+
+    def publish(self, channel, message):
+        return 1
+
+
+def _fake_get_redis_client():
+    return _FakeRedis()
+
+
+_redis.get_redis_client = _fake_get_redis_client
+
+# Avoid trying to send real emails or write external audit logs during tests
+try:
+    import auth_service.utils as _auth_utils  # type: ignore
+    _auth_utils.send_email = lambda *a, **k: None
+    _auth_utils.record_audit_log = lambda *a, **k: None
+except Exception:
+    # If the auth service isn't importable yet, tests that need it will import later
+    pass
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_database():
+    """Create DB schema for tests (imports models so they're registered)."""
+    # Import models to ensure they're registered with the Declarative Base metadata
+    try:
+        import auth_service.models.user  # noqa: F401
+        import auth_service.models.session  # noqa: F401
+        import auth_service.models.mfa  # noqa: F401
+    except Exception:
+        pass
+
+    try:
+        import ledger_service.models.account  # noqa: F401
+        import ledger_service.models.transaction  # noqa: F401
+        import ledger_service.models.transaction_line  # noqa: F401
+    except Exception:
+        pass
+
+    from shared.models import Base  # type: ignore
+
+    Base.metadata.create_all(bind=ENGINE)
+    yield
+    Base.metadata.drop_all(bind=ENGINE)
+
+
+@pytest.fixture()
+def db_session():
+    """Provide a SQLAlchemy session for tests."""
+    session = TestingSessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture
+def test_client(db_session):
+    """Factory fixture that returns a `TestClient` for a given FastAPI `app`.
+
+    Usage in tests:
+        client = test_client(auth_service.main.app)
+    """
+
+    def _make_client(app):
+        # Override the DB dependency so the app uses the test session
+        import shared.database as _db  # type: ignore
+
+        def _override_get_db():
+            try:
+                yield db_session
+            finally:
+                pass
+
+        app.dependency_overrides[_db.get_db] = _override_get_db
+        return TestClient(app)
+
+    return _make_client
 # Copyright 2026 Bhargav (Wings of Capital). All Rights Reserved.
 # Licensed under the Apache License, Version 2.0.
 

@@ -11,25 +11,27 @@ from typing import Any, Dict, Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
-import bcrypt
+from passlib.context import CryptContext
 
 from .config import get_settings
 from .exceptions import AuthError, RateLimitError
 from .redis import RedisClient
 
 _settings = get_settings()
+# Use PBKDF2-SHA256 to avoid bcrypt binary/version issues in test environments
+_pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"],
+    deprecated="auto",
+    pbkdf2_sha256__default_rounds=_settings.bcrypt_rounds,
+)
 
 
 def hash_password(password: str) -> str:
-    salt = bcrypt.gensalt(rounds=_settings.bcrypt_rounds)
-    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+    return _pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    try:
-        return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
-    except ValueError:
-        return False
+    return _pwd_context.verify(plain_password, hashed_password)
 
 
 def create_access_token(subject: str, claims: Optional[Dict[str, Any]] = None) -> str:

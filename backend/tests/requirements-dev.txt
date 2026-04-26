@@ -1,0 +1,9 @@
+pytest>=7.4
+sqlalchemy==2.0.23
+fastapi==0.104.1
+requests>=2.31
+pyotp==2.9.0
+httpx>=0.25
+
+# Optional: install additional test helpers
+# pip install -r backend/tests/requirements-dev.txt
